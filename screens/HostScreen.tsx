@@ -31,6 +31,7 @@ export default function HostScreen() {
   const [key, onChangeKey] = React.useState('');
   const [value, onChangeValue] = React.useState('');
   const [host, setHost] = React.useState(userSettings.host);
+  const [nickname, setNickname] = React.useState(userSettings.nickname ?? '');
   const [port, setPort] = React.useState(userSettings.port);
   const [ssl, setSsl] = React.useState();
   const [username, setUsername] = React.useState(userSettings.username);
@@ -48,8 +49,8 @@ const testLogin = async () => {
 save('ssl', isSwitchOn.toString());
 userSettings.setSsl(isSwitchOn.toString());
 
-const ok = await qbLogin({ host, port, ssl: isSwitchOn.toString(), username, password });
-if (ok) {
+const result = await qbLogin({ host, port, ssl: isSwitchOn.toString(), username, password });
+if (result.ok) {
 save('host', host);
 save('port', port);
 save('username', username);
@@ -65,7 +66,11 @@ userSettings.setSsl(isSwitchOn.toString());
 
 alert('Settings saved')
 } else {
-  alert('Could not auth with server.')
+  // Surface why it failed so we can tell bad creds / IP ban / network error apart.
+  const reason = result.error
+    ? `network: ${result.error}`
+    : `HTTP ${result.status ?? '?'}: ${result.body ?? ''}`;
+  alert(`Could not auth with server.\n\n${reason}`)
 }
 
 }
@@ -84,12 +89,12 @@ alert('Settings saved')
   <View darkColor="rgba(255,255,255,0)" style={styles.rightContainer}>
 
                    <TextInput
-                   
+
       placeholder={"Server Name?"}
 
         style={styles.input}
-        onChangeText={setHost}
-        value={host}
+        onChangeText={setNickname}
+        value={nickname}
       />
         </View>
 

@@ -38,8 +38,8 @@ export default function TabTwoScreen({navigation}) {
 
 
 const testLogin = async () => {
-  const ok = await qbLogin({ host, port, ssl: userSettings.ssl, username, password });
-  if (ok) {
+  const result = await qbLogin({ host, port, ssl: userSettings.ssl, username, password });
+  if (result.ok) {
 save('host', host);
 save('port', port);
 save('username', username);
@@ -50,7 +50,10 @@ userSettings.setUsername(username);
 userSettings.setPassword(password);
 alert('Settings saved')
     } else {
-      alert('Could not auth with server.')
+      const reason = result.error
+        ? `network: ${result.error}`
+        : `HTTP ${result.status ?? '?'}: ${result.body ?? ''}`;
+      alert(`Could not auth with server.\n\n${reason}`)
     }
 }
   return (

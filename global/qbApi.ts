@@ -5,12 +5,19 @@
 // that must be sent on subsequent requests. credentials:'include' makes RN's
 // networking layer (OkHttp on Android) keep and send that cookie.
 
+export interface QbLoginResult {
+  ok: boolean;
+  status?: number;
+  body?: string;
+  error?: string;
+}
+
 export function qbBaseUrl(s: any): string {
   const scheme = s.ssl === 'true' || s.ssl === true ? 'https://' : 'http://';
   return `${scheme}${s.host}:${s.port}`;
 }
 
-export async function qbLogin(s: any): Promise<boolean> {
+export async function qbLogin(s: any): Promise<QbLoginResult> {
   const body = `username=${encodeURIComponent(s.username ?? '')}&password=${encodeURIComponent(s.password ?? '')}`;
   try {
     const res = await fetch(`${qbBaseUrl(s)}/api/v2/auth/login`, {
@@ -19,10 +26,14 @@ export async function qbLogin(s: any): Promise<boolean> {
       credentials: 'include',
       body,
     });
-    return (await res.text()) === 'Ok.';
-  } catch (e) {
+    const text = (await res.text()).trim();
+    // qBittorrent returns exactly "Ok." on success; compare case-insensitively
+    // and trimmed so a trailing newline/whitespace can't cause a false negative.
+    const ok = res.status === 200 && text.toLowerCase() === 'ok.';
+    return { ok, status: res.status, body: text };
+  } catch (e: any) {
     console.log('qbLogin error', e);
-    return false;
+    return { ok: false, error: e?.message ?? String(e) };
   }
 }
 
