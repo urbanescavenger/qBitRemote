@@ -3,11 +3,12 @@ import AppContext from '../global/AppContext'
 
 import { Ionicons } from '@expo/vector-icons';
 
-import { StyleSheet, FlatList, TouchableOpacity, ColorSchemeName, TouchableNativeFeedback, Button } from 'react-native';
+import { StyleSheet, FlatList, TouchableOpacity, ColorSchemeName, TouchableNativeFeedback, Button, Text as RNText, View as RNView } from 'react-native';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
-import { ProgressBar, Appbar } from 'react-native-paper';
+import { ProgressBar } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { qbLogin, qbGet } from '../global/qbApi';
 
 
@@ -91,32 +92,27 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
 
-  const ContentTitle = ({ title, style }) => (
-    <Appbar.Content
-      title={<Text style={style}> {title} </Text>}
-      style={{ alignItems: 'center' }}
-    />
-  );
   const _handleMore = () => navigation.navigate('UploadScreen');
 
-  
+
   return (
 
     <View style={styles.container}>
 
 
-      <Appbar.Header>
-      <View style={{backgroundColor: 'transparent'}}>
-            <Text style={{ marginLeft: 20, color: 'white' }}>↑{clinetInfo.up_info_speed == null ? "0" : formatBytes(clinetInfo.up_info_speed)}/s</Text>
-            
-            <Text style={{ marginLeft: 20, color: 'white' }}>↓{clinetInfo.dl_info_speed == null ? "0" : formatBytes(clinetInfo.dl_info_speed)}/s</Text>
-
-
-
-</View>
-        <ContentTitle title={'Remote'} style={{ color: 'white' }} />
-        <Appbar.Action icon="plus" onPress={_handleMore} />
-      </Appbar.Header>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#2f6fed' }}>
+        <RNView style={{ height: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
+          <RNView style={{ flex: 1 }}>
+            <RNText style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>Remote</RNText>
+            <RNText style={{ color: '#dbeafe', fontSize: 12, marginTop: 2 }}>
+              ↑{clinetInfo.up_info_speed == null ? '0' : formatBytes(clinetInfo.up_info_speed)}/s  ↓{clinetInfo.dl_info_speed == null ? '0' : formatBytes(clinetInfo.dl_info_speed)}/s
+            </RNText>
+          </RNView>
+          <TouchableOpacity onPress={_handleMore} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={{ paddingHorizontal: 12 }}>
+            <RNText style={{ color: '#fff', fontSize: 30, fontWeight: '700', lineHeight: 34 }}>+</RNText>
+          </TouchableOpacity>
+        </RNView>
+      </SafeAreaView>
 
 
       <FlatList
@@ -187,7 +183,7 @@ const styles = StyleSheet.create({
   },
   markdown: {
     textAlign: 'center',
-    fontSize: 10,
+    fontSize: 13,
     marginTop: 7,
     marginBottom: 7,
   },
