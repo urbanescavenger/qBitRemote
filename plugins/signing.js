@@ -14,24 +14,21 @@ const MARKER = '// === begin injected release signing (plugins/signing.js) ===';
 
 const SIGNING_BLOCK = `
 ${MARKER}
-if (project.hasProperty('key.store')) {
-    signingConfigs {
-        release {
-            storeFile file(project.properties['key.store'])
-            storePassword project.properties['key.store.password']
-            keyAlias project.properties['key.alias']
-            keyPassword project.properties['key.key.password']
+android {
+    if (project.hasProperty('key.store')) {
+        signingConfigs {
+            release {
+                storeFile file(project.properties['key.store'])
+                storePassword project.properties['key.store.password']
+                keyAlias project.properties['key.alias']
+                keyPassword project.properties['key.key.password']
+            }
         }
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.release
-        }
-    }
-} else {
-    buildTypes {
-        release {
-            signingConfig signingConfigs.debug
+            signingConfig project.hasProperty('key.store')
+                ? signingConfigs.release : signingConfigs.debug
         }
     }
 }
