@@ -1,7 +1,12 @@
 rootProject.name = 'qBitRemote'
 
 apply from: '../node_modules/react-native-unimodules/gradle.groovy'
-includeUnimodulesProjects()
+// react-native-unimodules hardcodes modulesPaths to '../../node_modules', but the
+// autolinking CLI runs from android/ (one level deep), so that resolves to a
+// non-existent ../node_modules above the repo and finds 0 modules — leaving
+// :expo-modules-core unlinked and breaking react-native-reanimated's expo linking.
+// Override to the correct one-level-up path.
+includeUnimodulesProjects(modulesPaths: ['../node_modules'])
 
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle");
 applyNativeModulesSettingsGradle(settings)
