@@ -50,9 +50,11 @@ userSettings.setUsername(username);
 userSettings.setPassword(password);
 alert('Settings saved')
     } else {
-      const reason = result.error
-        ? `network: ${result.error}`
-        : `HTTP ${result.status ?? '?'}: ${result.body ?? ''}`;
+      let reason: string;
+      if (result.error) reason = `network: ${result.error}`;
+      else if (result.status === 401) reason = 'HTTP 401 — wrong username or password';
+      else if (result.status === 403) reason = 'HTTP 403 — IP banned by qBittorrent (restart it / wait / whitelist this IP)';
+      else reason = `HTTP ${result.status ?? '?'}: ${result.body ?? ''}`;
       alert(`Could not auth with server.\n\n${reason}`)
     }
 }

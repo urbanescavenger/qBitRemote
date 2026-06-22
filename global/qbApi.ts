@@ -27,9 +27,12 @@ export async function qbLogin(s: any): Promise<QbLoginResult> {
       body,
     });
     const text = (await res.text()).trim();
-    // qBittorrent returns exactly "Ok." on success; compare case-insensitively
-    // and trimmed so a trailing newline/whitespace can't cause a false negative.
-    const ok = res.status === 200 && text.toLowerCase() === 'ok.';
+    // qBittorrent version-dependent success responses:
+    //  - newer versions: HTTP 204 No Content (login action returns no body)
+    //  - older versions: HTTP 200 with body "Ok."
+    // Failures are 401 (bad creds) / 403 (IP banned) — surfaced via {status,body} below.
+    const ok = res.status === 204
+      || (res.status === 200 && text.toLowerCase() === 'ok.');
     return { ok, status: res.status, body: text };
   } catch (e: any) {
     console.log('qbLogin error', e);
