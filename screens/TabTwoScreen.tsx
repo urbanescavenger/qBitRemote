@@ -13,7 +13,7 @@ export default function TabTwoScreen({ navigation }) {
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
       <Button
-        title="Host Settings"
+        title="服务器设置"
         onPress={() => navigation.navigate('HostScreen')}
       />
 

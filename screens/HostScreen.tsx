@@ -64,35 +64,35 @@ userSettings.setUsername(username);
 userSettings.setPassword(password);
 userSettings.setSsl(isSwitchOn.toString());
 
-alert('Settings saved')
+alert('设置已保存')
 } else {
   // Surface why it failed so we can tell bad creds / IP ban / network error apart.
   let reason: string;
   if (result.error) reason = `network: ${result.error}`;
-  else if (result.status === 401) reason = 'HTTP 401 — wrong username or password';
-  else if (result.status === 403) reason = 'HTTP 403 — IP banned by qBittorrent (restart it / wait / whitelist this IP)';
+  else if (result.status === 401) reason = 'HTTP 401 — 用户名或密码错误';
+  else if (result.status === 403) reason = 'HTTP 403 — 被 qBittorrent 封禁 IP(重启它 / 等待 / 加白名单)';
   else reason = `HTTP ${result.status ?? '?'}: ${result.body ?? ''}`;
-  alert(`Could not auth with server.\n\n${reason}`)
+  alert(`无法通过服务器验证。\n\n${reason}`)
 }
 
 }
   
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.info}>NAME</Text>
+      <Text style={styles.info}>名称</Text>
   
       <View  darkColor="#1c1c1c" style={styles.cards}>
       <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
   <View darkColor="rgba(255,255,255,0)" style={styles.leftContainer}>
           
-          <Text style={styles.getStartedText}>Nick name</Text>
+          <Text style={styles.getStartedText}>昵称</Text>
         </View>
 
   <View darkColor="rgba(255,255,255,0)" style={styles.rightContainer}>
 
                    <TextInput
 
-      placeholder={"Server Name?"}
+      placeholder={"服务器名?"}
 
         style={styles.input}
         onChangeText={setNickname}
@@ -104,7 +104,7 @@ alert('Settings saved')
 </View>
 
 
-      <Text style={styles.info}>qBitTorrent CREDENTIALS</Text>
+      <Text style={styles.info}>qBittorrent 账号</Text>
 
       <View darkColor="#1c1c1c" style={styles.cards}>
 
@@ -113,14 +113,14 @@ alert('Settings saved')
 <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
   <View darkColor="rgba(255,255,255,0)" style={styles.leftContainer}>
 
-          <Text style={styles.getStartedText}>Host</Text>
+          <Text style={styles.getStartedText}>地址</Text>
         </View>
 
   <View darkColor="rgba(255,255,255,0)" style={styles.rightContainer}>
 
            <TextInput
-           
-      placeholder={"Host qBittorrent"}
+
+      placeholder={"qBittorrent 地址"}
 
         style={styles.input}
         onChangeText={setHost}
@@ -135,13 +135,13 @@ alert('Settings saved')
 <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
   <View darkColor="rgba(255,255,255,0)" style={styles.leftContainer}>
 
-          <Text style={styles.getStartedText}>Port</Text>
+          <Text style={styles.getStartedText}>端口</Text>
         </View>
 
   <View darkColor="rgba(255,255,255,0)" style={styles.rightContainer}>
 
       <TextInput
-      placeholder={"Port of qBittorrent WebUI"}
+      placeholder={"WebUI 端口"}
         style={styles.input}
         onChangeText={setPort}
         value={port}
@@ -153,7 +153,7 @@ alert('Settings saved')
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
 <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={styles.getStartedText}>SSL Enabled</Text>
+          <Text style={styles.getStartedText}>启用 SSL</Text>
          <Switch value={isSwitchOn} onValueChange={onToggleSwitch} />
         </View>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -161,12 +161,12 @@ alert('Settings saved')
 <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
   <View darkColor="rgba(255,255,255,0)" style={styles.leftContainer}>
 
-          <Text style={styles.getStartedText}>Username</Text>
+          <Text style={styles.getStartedText}>用户名</Text>
           </View>
   <View  darkColor="rgba(255,255,255,0)" style={styles.rightContainer}>
 
       <TextInput
-      placeholder={"Enter Username"}
+      placeholder={"输入用户名"}
 
         style={styles.input}
         onChangeText={setUsername}
@@ -182,13 +182,13 @@ alert('Settings saved')
 <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
   <View darkColor="rgba(255,255,255,0)" style={styles.leftContainer}>
 
-          <Text style={styles.getStartedText}>Password</Text>
+          <Text style={styles.getStartedText}>密码</Text>
           </View>
 
            <View darkColor="rgba(255,255,255,0)" style={styles.rightContainer}>
- 
+
       <TextInput
-      placeholder={"Enter Password"}
+      placeholder={"输入密码"}
 
         style={styles.input}
         onChangeText={setPassword}
@@ -203,12 +203,12 @@ alert('Settings saved')
 
 
 
-<Text style={{textAlign: 'center'}}>Reguest are sent as "SSL+HOST+':'+PORT"/</Text>
-<Text style={{textAlign: 'center'}}>For relative path add after port without '/' at end</Text>
+<Text style={{textAlign: 'center'}}>请求格式为 "SSL+地址+':'+端口"</Text>
+<Text style={{textAlign: 'center'}}>端口后直接接相对路径,末尾不要加 '/'</Text>
 
 
 <Button
-        title="Save"
+        title="保存"
         onPress={() => {
         testLogin();
         }}

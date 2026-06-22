@@ -60,7 +60,7 @@ export default function UploadScreen({
       check(res.status, body);
     } catch (error) {
       console.log('error', error);
-      alert(`Could not add torrent.\n\nnetwork: ${error?.message ?? String(error)}`)
+      alert(`无法添加种子。\n\nnetwork: ${error?.message ?? String(error)}`)
     }
   }
   const check = (status: number, body: string) => {
@@ -70,7 +70,7 @@ export default function UploadScreen({
     if (ok) {
       navigation.goBack()
     } else {
-      alert(`Could not add torrent.\n\nHTTP ${status}: ${body || '(no body)'}`)
+      alert(`无法添加种子。\n\nHTTP ${status}: ${body || '(no body)'}`)
     }
   }
 
@@ -137,10 +137,10 @@ const sendTorrent = async () => {
   return (
     <ScrollView style={styles.container}>
    
-      <Text style={styles.info}>SELECT FILE</Text>
+      <Text style={styles.info}>选择文件</Text>
       <View darkColor="#1c1c1c" style={styles.cards}>
         <Button
-          title='Add Torrent (Clipboard)'
+          title='从剪贴板添加'
           onPress={() => addTorrent()}
         />
 
@@ -148,7 +148,7 @@ const sendTorrent = async () => {
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
         <Button
-          title='Add Torrent File'
+          title='选择种子文件'
           onPress={() => _pickDocument()}
         />
 
@@ -157,7 +157,7 @@ const sendTorrent = async () => {
 
  
 
-      <Text style={styles.info}>SET CATEGORY </Text>
+      <Text style={styles.info}>选择分类 </Text>
       <View darkColor="#1c1c1c" style={styles.cards}>
 
 <Picker  
@@ -165,7 +165,7 @@ const sendTorrent = async () => {
   onValueChange={(itemValue, itemIndex) =>
     setSelectedCat(itemValue)
   }>
-       <Picker.Item label="Uncategorized" value="uncategorized"></Picker.Item>
+       <Picker.Item label="未分类" value="uncategorized"></Picker.Item>
  {
   Object.keys(allCat).map(function(key) {
     return (
@@ -180,7 +180,7 @@ const sendTorrent = async () => {
 
 
 <Button
-          title='Send Torrent'
+          title='发送'
           onPress={() => sendTorrent()}
         />
         

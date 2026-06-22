@@ -34,16 +34,16 @@ export default function BottomTabNavigator() {
   return (
     <BottomTab.Navigator
       initialRouteName="TabOne"
-      screenOptions={{ tabBarActiveTintColor: Colors[colorScheme].tint }}>
+      screenOptions={{ tabBarActiveTintColor: Colors[colorScheme].tint, tabBarLabelStyle: { fontSize: 14 } }}>
       <BottomTab.Screen
-        name="Server"
+        name="种子"
         component={TabOneNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="download-outline" color={color} />,
         }}
       />
       <BottomTab.Screen
-        name="Settings"
+        name="设置"
         component={TabTwoNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="cog-outline" color={color} />,
@@ -86,14 +86,14 @@ function TabOneNavigator() {
         name="UploadScreen"
         component={UploadScreen}
         options={{
-          headerTitle: 'Upload Torrent',
+          headerTitle: '添加种子',
         }}
       />
       <TabOneStack.Screen
         name="InfoScreen"
         component={InfoScreen}
         options={{
-          headerTitle: 'Torrent',
+          headerTitle: '种子详情',
         }}
       />
     </TabOneStack.Navigator>
@@ -108,12 +108,12 @@ function TabTwoNavigator() {
       <TabTwoStack.Screen
         name="Settings"
         component={TabTwoScreen}
-        options={{ headerTitle: 'Settings' }}
+        options={{ headerTitle: '设置' }}
       />
        <TabTwoStack.Screen
         name="HostScreen"
         component={HostScreen}
-        options={{ headerTitle: 'Add Host' }}
+        options={{ headerTitle: '添加服务器' }}
       />
     </TabTwoStack.Navigator>
   );

@@ -103,7 +103,7 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
       <SafeAreaView edges={['top']} style={{ backgroundColor: '#2f6fed' }}>
         <RNView style={{ height: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}>
           <RNView style={{ flex: 1 }}>
-            <RNText style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>Remote</RNText>
+            <RNText style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>远程</RNText>
             <RNText style={{ color: '#dbeafe', fontSize: 12, marginTop: 2 }}>
               ↑{clinetInfo.up_info_speed == null ? '0' : formatBytes(clinetInfo.up_info_speed)}/s  ↓{clinetInfo.dl_info_speed == null ? '0' : formatBytes(clinetInfo.dl_info_speed)}/s
             </RNText>
@@ -134,17 +134,17 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
               {(() => {
                 if (item.state == 'stalledUP') {
                   return (
-                    <Text style={styles.markdown}>Seeding</Text>
+                    <Text style={styles.markdown}>做种</Text>
                   )
                 }
                 if (item.state == 'pausedDL') {
                   return (
-                    <Text style={styles.markdown}>Paused</Text>
+                    <Text style={styles.markdown}>已暂停</Text>
                   )
                 }
                 if (item.state == 'uploading') {
                   return (
-                    <Text style={styles.markdown}>Seeding</Text>
+                    <Text style={styles.markdown}>做种</Text>
                   )
                 }
 
