@@ -3,6 +3,8 @@ name: Cloud Build
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -11,6 +13,8 @@ jobs:
   build-android:
     name: Build qbitRT Android APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,23 +47,70 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x android/gradlew
 
-      # Build debug APK by default so no signing keystore is required.
-      # To build a signed release APK, create a signing keystore and add
-      # KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, and KEY_PASSWORD
-      # as repository secrets, then replace the command below with:
-      #   ./gradlew assembleRelease
-      - name: Build qbitRT Android APK
+      # Restore the release keystore from repo secrets (tag builds only).
+      # Requires secrets: KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD.
+      - name: Restore release keystore
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          echo "${KEYSTORE_BASE64}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          ls -l "$RUNNER_TEMP/release.keystore"
+          echo "KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+          echo "KEY_ALIAS=${KEY_ALIAS}" >> "$GITHUB_ENV"
+          echo "KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}" >> "$GITHUB_ENV"
+          echo "KEY_PASSWORD=${KEY_PASSWORD}" >> "$GITHUB_ENV"
+
+      # Branch / PR builds: debug APK (no keystore needed).
+      - name: Build debug APK
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Rename APK to qbitRT
+      - name: Collect debug APK
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         run: |
           mkdir -p artifacts
-          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/qbitRT.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/qbitRT-debug.apk
+
+      # Tag builds: signed release APKs (one per ABI).
+      - name: Build signed release APKs
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: android
+        run: |
+          ./gradlew assembleRelease \
+            -Pkey.store="$KEYSTORE_PATH" \
+            -Pkey.alias="$KEY_ALIAS" \
+            -Pkey.store.password="$KEYSTORE_PASSWORD" \
+            -Pkey.key.password="$KEY_PASSWORD"
+
+      - name: Collect release APKs
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          mkdir -p artifacts
+          for apk in android/app/build/outputs/apk/release/*.apk; do
+            base=$(basename "$apk" -release.apk)   # app-<abi>
+            abi="${base#app-}"
+            cp "$apk" "artifacts/qbitRT-${{ github.ref_name }}-$abi.apk"
+          done
+          ls -l artifacts
 
       - name: Upload qbitRT APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: qbitRT
-          path: artifacts/qbitRT.apk
+          path: artifacts/*.apk
           if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" artifacts/*.apk \
+            --generate-notes \
+            --title "${{ github.ref_name }}"
