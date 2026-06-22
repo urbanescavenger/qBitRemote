@@ -1,7 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { StyleSheet, Image, TextInput, KeyboardAvoidingView, Button, Scrollview  } from 'react-native';
 import AppContext from '../global/AppContext'
-import { Switch } from 'react-native-paper';
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import * as SecureStore from 'expo-secure-store';

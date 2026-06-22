@@ -4,12 +4,10 @@ import AppContext from '../global/AppContext'
 import { Ionicons } from '@expo/vector-icons';
 
 import { StyleSheet, FlatList, TouchableOpacity, ColorSchemeName, TouchableNativeFeedback, Button } from 'react-native';
-import { DefaultTheme, DarkTheme } from '@react-navigation/native';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
-import { ProgressBar, Colors, Headline, Appbar } from 'react-native-paper';
-import { Item } from 'react-native-paper/lib/typescript/components/Drawer/Drawer';
+import { ProgressBar, Appbar } from 'react-native-paper';
 
 
 
@@ -128,7 +126,7 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
     <View style={styles.container}>
 
 
-      <Appbar.Header theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Appbar.Header>
       <View style={{backgroundColor: 'transparent'}}>
             <Text style={{ marginLeft: 20, color: 'white' }}>↑{clinetInfo.up_info_speed == null ? "0" : formatBytes(clinetInfo.up_info_speed)}/s</Text>
             
@@ -152,7 +150,7 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
             <Text style={{ textAlign: 'center', marginBottom: 5 }} numberOfLines={1}>{item.name}</Text>
 
 
-            <ProgressBar style={{ height: 3, width: '100%', borderRadius: 20 }} progress={item.progress} color={Colors.blue400} />
+            <ProgressBar style={{ height: 3, width: '100%', borderRadius: 20 }} progress={item.progress} color="#42A5F5" />
 
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>

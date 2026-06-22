@@ -5,16 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon2.png",
-    "privacy": "unlisted",
     "scheme": "qbitremote",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": [
       "**/*"
@@ -32,6 +28,24 @@
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "./plugins/cleartext",
+      "./plugins/signing",
+      "expo-build-properties",
+      "expo-splash-screen"
+    ],
+    "expo-build-properties": {
+      "android": {
+        "compileSdkVersion": 35,
+        "targetSdkVersion": 35,
+        "minSdkVersion": 24,
+        "buildToolsVersion": "35.0.0",
+        "usesCleartextTraffic": true
+      },
+      "ios": {
+        "deploymentTarget": "15.1"
+      }
     }
   }
 }

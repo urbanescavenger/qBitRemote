@@ -6,8 +6,9 @@ import { Text, View } from '../components/Themed';
 import EditScreenInfo from '../components/EditScreenInfo';
 import {Picker} from '@react-native-picker/picker';
 
-import { StyleSheet, TouchableOpacity, TextInput, Clipboard, Button, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, TextInput, Button, ScrollView } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 
 import { RootStackParamList } from '../types';
@@ -19,7 +20,7 @@ export default function UploadScreen({
 
   const [selectedCat, setSelectedCat] = useState("uncategorized");
   const [allCat, setAllCat] = useState([]);
-  const [docPicked, setDocPicked] = useState();
+  const [docPicked, setDocPicked] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
   const [text, onChangeText] = React.useState("");
 
@@ -48,7 +49,7 @@ export default function UploadScreen({
   }
 
   const addTorrent = async () => {
-    const texts = await Clipboard.getString()
+    const texts = await Clipboard.getStringAsync()
     var requestOptions = {
       method: 'GET',
       redirect: 'follow'
@@ -110,10 +111,12 @@ const getCategory = async () => {
 
 const sendTorrent = async () => {
 
-
+  if (!docPicked) {
+    return;
+  }
 
   var data = new FormData();
-  data.append("torrents", docPicked, docPicked.uri);
+  data.append("torrents", docPicked as any, docPicked.name ?? "torrent");
   if(selectedCat != "uncategorized") {
       data.append("category", selectedCat);
   }
@@ -138,9 +141,10 @@ const sendTorrent = async () => {
 
   const _pickDocument = async () => {
     let result = await DocumentPicker.getDocumentAsync({});
-   
-    setDocPicked(result);
-    
+    if (result.canceled || !result.assets || result.assets.length === 0) {
+      return;
+    }
+    setDocPicked(result.assets[0]);
   }
 
   React.useEffect(() => {

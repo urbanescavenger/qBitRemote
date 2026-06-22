@@ -1,8 +1,8 @@
-import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import AppContext from './global/AppContext';
 import * as SecureStore from 'expo-secure-store';
+import { PaperProvider } from 'react-native-paper';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -66,11 +66,13 @@ if (!loading) {
   } else {
     return (
       <AppContext.Provider value={userSettings}>
-  
+
       <SafeAreaProvider>
-        <Navigation colorScheme={colorScheme} />
-        <StatusBar />
-      </SafeAreaProvider> 
+        <PaperProvider>
+          <Navigation colorScheme={colorScheme} />
+          <StatusBar />
+        </PaperProvider>
+      </SafeAreaProvider>
       </AppContext.Provider>
     );
   }

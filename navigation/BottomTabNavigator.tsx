@@ -34,19 +34,19 @@ export default function BottomTabNavigator() {
   return (
     <BottomTab.Navigator
       initialRouteName="TabOne"
-      tabBarOptions={{ activeTintColor: Colors[colorScheme].tint }}>
+      screenOptions={{ tabBarActiveTintColor: Colors[colorScheme].tint }}>
       <BottomTab.Screen
         name="Server"
         component={TabOneNavigator}
         options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="ios-download-outline" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="download-outline" color={color} />,
         }}
       />
       <BottomTab.Screen
         name="Settings"
         component={TabTwoNavigator}
         options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="ios-cog-outline" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="cog-outline" color={color} />,
         }}
       />
     </BottomTab.Navigator>
