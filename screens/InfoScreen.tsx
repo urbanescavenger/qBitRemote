@@ -5,6 +5,13 @@ import { ScrollView, StyleSheet, TouchableOpacity, Button, Vibration, Alert } fr
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
+import { qbAction } from '../global/qbApi';
+
+const reason = (r: any) =>
+  r.error ? `network: ${r.error}`
+  : r.status === 401 ? 'HTTP 401 — not authenticated'
+  : r.status === 403 ? 'HTTP 403 — forbidden (banned IP?)'
+  : `HTTP ${r.status ?? '?'}: ${r.body ?? ''}`;
 
 export default function InfoScreen({ route, navigation }) {
   const { data } = route.params;
@@ -22,77 +29,30 @@ export default function InfoScreen({ route, navigation }) {
           style: "cancel"
         },
         {
-          text: "DELETE", onPress: () => {
-
-            var requestOptions = {
-              method: 'GET',
-              redirect: 'follow'
-            };
-
-            fetch((userSettings.ssl == 'true' ? 'https://':'http://')+ userSettings.host + ":" + userSettings.port + "/api/v2/torrents/delete?hashes=" + data.hash + "&deleteFiles=true", requestOptions)
-              .then(response => response.text())
-              .then(result => console.log(result)).then(() => navigation.goBack())
-              .catch(error => console.log('error', error));
-            Vibration.vibrate()
-
-
-
+          text: "DELETE", onPress: async () => {
+            const r = await qbAction(userSettings, "/api/v2/torrents/delete?hashes=" + data.hash + "&deleteFiles=true");
+            if (r.ok) {
+              Vibration.vibrate();
+              navigation.goBack();
+            } else {
+              alert(`Could not delete torrent.\n\n${reason(r)}`);
+            }
           }
         }
       ]
     );
   }
-  const pauseTorrent = () => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    fetch((userSettings.ssl == 'true' ? 'https://':'http://')+ userSettings.host + ":" + userSettings.port + "/api/v2/torrents/pause?hashes=" + data.hash + "", requestOptions)
-      .then(response => response.text())
-      .then(result => console.log(result))
-      .catch(error => console.log('error', error));
-    Vibration.vibrate()
-
+  const pauseTorrent = async () => {
+    const r = await qbAction(userSettings, "/api/v2/torrents/pause?hashes=" + data.hash);
+    if (r.ok) { Vibration.vibrate(); } else { alert(`Could not pause torrent.\n\n${reason(r)}`); }
   }
-  const recheckTorrent = () => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    fetch((userSettings.ssl == 'true' ? 'https://':'http://')+ userSettings.host + ":" + userSettings.port + "/api/v2/torrents/recheck?hashes=" + data.hash + "", requestOptions)
-      .then(response => response.text())
-      .then(result => console.log(result))
-      .catch(error => console.log('error', error));
-    Vibration.vibrate()
-
+  const recheckTorrent = async () => {
+    const r = await qbAction(userSettings, "/api/v2/torrents/recheck?hashes=" + data.hash);
+    if (r.ok) { Vibration.vibrate(); } else { alert(`Could not recheck torrent.\n\n${reason(r)}`); }
   }
-  const resumeTorrent = () => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    fetch((userSettings.ssl == 'true' ? 'https://':'http://')+ userSettings.host + ":" + userSettings.port + "/api/v2/torrents/resume?hashes=" + data.hash + "", requestOptions)
-      .then(response => response.text())
-      .then(result => console.log(result))
-      .catch(error => console.log('error', error));
-    Vibration.vibrate()
-
-  }
-  const moveTorrents = () => {
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    fetch((userSettings.ssl == 'true' ? 'https://':'http://')+ userSettings.host + ":" + userSettings.port + "/api/v2/torrents/resume?hashes=" + data.hash + "", requestOptions)
-      .then(response => response.text())
-      .then(result => console.log(result)).then(() => navigation.goBack())
-      .catch(error => console.log('error', error));
-    Vibration.vibrate()
-
+  const resumeTorrent = async () => {
+    const r = await qbAction(userSettings, "/api/v2/torrents/resume?hashes=" + data.hash);
+    if (r.ok) { Vibration.vibrate(); } else { alert(`Could not resume torrent.\n\n${reason(r)}`); }
   }
 
   return (

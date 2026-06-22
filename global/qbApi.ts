@@ -63,3 +63,22 @@ export async function qbPost(s: any, path: string, body: FormData): Promise<stri
     return null;
   }
 }
+
+// Run a control action (pause/resume/recheck/delete, ...) as GET-with-query.
+// Carries the SID cookie (credentials:'include') and reports success the same
+// way as login/add: 204 (newer qBittorrent) or 200 "Ok." (older).
+export async function qbAction(s: any, path: string): Promise<QbLoginResult> {
+  try {
+    const res = await fetch(`${qbBaseUrl(s)}${path}`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    const text = (await res.text()).trim();
+    const ok = res.status === 204
+      || (res.status === 200 && text.toLowerCase() === 'ok.');
+    return { ok, status: res.status, body: text };
+  } catch (e: any) {
+    console.log('qbAction error', e);
+    return { ok: false, error: e?.message ?? String(e) };
+  }
+}
