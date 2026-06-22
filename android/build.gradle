@@ -32,6 +32,10 @@ allprojects {
         }
 
         google()
+        // Fresco 2.2.0 submodules (fbcore, imagepipeline, memory-type-*, ...) pulled in
+        // transitively by flipper-fresco-plugin live on Maven Central. jcenter is sunset and
+        // no longer serves them.
+        mavenCentral()
         jcenter()
         maven { url 'https://www.jitpack.io' }
     }
