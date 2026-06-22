@@ -121,6 +121,7 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
 
       <FlatList
         data={torrents}
+        style={{ flex: 1 }}
         onRefresh={() => onRefresh()}
         refreshing={refreshed}
         renderItem={({ item }) => (
@@ -176,7 +177,6 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center'
   },
   row: {
     flex: 1,

@@ -10,7 +10,7 @@ import { StyleSheet, TouchableOpacity, TextInput, Button, ScrollView } from 'rea
 import * as DocumentPicker from 'expo-document-picker';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
-import { qbLogin, qbGet } from '../global/qbApi';
+import { qbLogin, qbGet, qbBaseUrl } from '../global/qbApi';
 
 import { RootStackParamList } from '../types';
 
@@ -50,20 +50,27 @@ export default function UploadScreen({
       formdata.append("category", selectedCat);
   }
 
-    fetch((userSettings.ssl == 'true' ? 'https://':'http://')+userSettings.host+":"+userSettings.port+"/api/v2/torrents/add", {
-      method: 'POST',
-      credentials: 'include',
-      body: formdata,
-    })
-      .then(response => response.text())
-      .then(result => check(result))
-      .catch(error => console.log('error', error));
+    try {
+      const res = await fetch(qbBaseUrl(userSettings) + "/api/v2/torrents/add", {
+        method: 'POST',
+        credentials: 'include',
+        body: formdata,
+      });
+      const body = await res.text();
+      check(res.status, body);
+    } catch (error) {
+      console.log('error', error);
+      alert(`Could not add torrent.\n\nnetwork: ${error?.message ?? String(error)}`)
+    }
   }
-  const check = (res: any) => {
-    if (res == 'Ok.') {
+  const check = (status: number, body: string) => {
+    // Newer qBittorrent returns 204 No Content on success; older returns 200 "Ok."
+    const ok = status === 204
+      || (status === 200 && body.trim().toLowerCase() === 'ok.');
+    if (ok) {
       navigation.goBack()
     } else {
-     
+      alert(`Could not add torrent.\n\nHTTP ${status}: ${body || '(no body)'}`)
     }
   }
 
@@ -89,7 +96,11 @@ const sendTorrent = async () => {
   await qbLogin(userSettings);
 
   var data = new FormData();
-  data.append("torrents", docPicked as any, docPicked.name ?? "torrent");
+  data.append("torrents", {
+    uri: docPicked.uri,
+    name: docPicked.name ?? "torrent",
+    type: docPicked.mimeType ?? 'application/x-bittorrent',
+  } as any, docPicked.name ?? "torrent");
   if(selectedCat != "uncategorized") {
       data.append("category", selectedCat);
   }
@@ -102,11 +113,11 @@ const sendTorrent = async () => {
   xhr.addEventListener("readystatechange", function () {
     if (this.readyState === 4) {
       console.log(this.responseText);
-      check(this.responseText);
+      check(this.status, this.responseText);
     }
   });
 
-  xhr.open("POST", (userSettings.ssl == 'true' ? 'https://':'http://')+userSettings.host+":"+userSettings.port+"/api/v2/torrents/add");
+  xhr.open("POST", qbBaseUrl(userSettings) + "/api/v2/torrents/add");
 
   xhr.send(data);
 
