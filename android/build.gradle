@@ -39,4 +39,19 @@ allprojects {
         jcenter()
         maven { url 'https://www.jitpack.io' }
     }
+
+    // Fresco 2.2.0 (the only version requesting 2.2.0 is flipper-fresco-plugin:0.54.0)
+    // was published solely to jcenter, which sunset in 2022; it was never uploaded to
+    // Maven Central (facebook/fresco#2622). Gradle aligns all Fresco submodules to the
+    // highest requested version, so the whole graph fails to resolve. Force the entire
+    // com.facebook.fresco group to 2.3.0 — fully on Maven Central and API-compatible with
+    // 2.2.0 — so RN's 2.0.0, flipper's 2.2.0, and the fresco-flipper bridge all resolve.
+    configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'com.facebook.fresco') {
+                details.useVersion '2.3.0'
+                details.because 'fresco 2.2.0 was jcenter-only and is no longer resolvable; 2.3.0 is the nearest version on Maven Central and is API-compatible'
+            }
+        }
+    }
 }
