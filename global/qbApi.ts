@@ -84,8 +84,9 @@ export async function qbAction(
       body,
     });
     const text = (await res.text()).trim();
-    const ok = res.status === 204
-      || (res.status === 200 && text.toLowerCase() === 'ok.');
+    // These control endpoints return 204 (or 200 with an empty body) on success,
+    // never a 2xx with an error body; failures are 4xx. So any 2xx = success.
+    const ok = res.status >= 200 && res.status < 300;
     return { ok, status: res.status, body: text };
   } catch (e: any) {
     console.log('qbAction error', e);
