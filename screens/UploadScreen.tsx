@@ -10,6 +10,7 @@ import { StyleSheet, TouchableOpacity, TextInput, Button, ScrollView } from 'rea
 import * as DocumentPicker from 'expo-document-picker';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
+import { qbLogin, qbGet } from '../global/qbApi';
 
 import { RootStackParamList } from '../types';
 
@@ -24,17 +25,8 @@ export default function UploadScreen({
 
   const [text, onChangeText] = React.useState("");
 
-  const login = () => {
-
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    fetch((userSettings.ssl == 'true' ? 'https://':'http://')+userSettings.host+":"+userSettings.port+"/api/v2/auth/login?username="+userSettings.username+"&password="+userSettings.password+"", requestOptions)
-      .then(response => response.text())
-      .then(result => console.log(result))
-      .catch(error => console.log('error', error));
+  const login = async () => {
+    await qbLogin(userSettings);
   }
 
 
@@ -50,17 +42,7 @@ export default function UploadScreen({
 
   const addTorrent = async () => {
     const texts = await Clipboard.getStringAsync()
-    var requestOptions = {
-      method: 'GET',
-      redirect: 'follow'
-    };
-
-    fetch((userSettings.ssl == 'true' ? 'https://':'http://')+userSettings.host+":"+userSettings.port+"/api/v2/auth/login?username="+userSettings.username+"&password="+userSettings.password+"", requestOptions)
-      .then(response => response.text())
-      .catch(error => console.log('error', error));
-
-
-    var myHeaders = new Headers();
+    await qbLogin(userSettings);
 
     var formdata = new FormData();
     formdata.append("urls", texts);
@@ -68,12 +50,11 @@ export default function UploadScreen({
       formdata.append("category", selectedCat);
   }
 
-    var requestOptions = {
+    fetch((userSettings.ssl == 'true' ? 'https://':'http://')+userSettings.host+":"+userSettings.port+"/api/v2/torrents/add", {
       method: 'POST',
+      credentials: 'include',
       body: formdata,
-    };
-
-    fetch((userSettings.ssl == 'true' ? 'https://':'http://')+userSettings.host+":"+userSettings.port+"/api/v2/torrents/add", requestOptions)
+    })
       .then(response => response.text())
       .then(result => check(result))
       .catch(error => console.log('error', error));
@@ -87,26 +68,16 @@ export default function UploadScreen({
   }
 
 const getCategory = async () => {
- 
-    var myHeaders = new Headers();
-
-    var requestOptions = {
-      method: 'GET',
-      headers: myHeaders,
-    };
-    await fetch((userSettings.ssl == 'true' ? 'https://':'http://') + userSettings.host + ":" + userSettings.port + "/api/v2/sync/maindata", requestOptions)
-      .then(response => response.json())
-      .then(result => setAllCat(result.categories))
-      .catch(error => console.log('error', error));
+    const result = await qbGet(userSettings, '/api/v2/sync/maindata');
+    if (result) {
+      setAllCat(result.categories);
+    }
 
       console.log(allCat)
 
       Object.keys(allCat).map(function(key) {
         console.log(allCat[key].name);
       })
-      
-      
-    
 }
 
 const sendTorrent = async () => {
@@ -114,6 +85,8 @@ const sendTorrent = async () => {
   if (!docPicked) {
     return;
   }
+
+  await qbLogin(userSettings);
 
   var data = new FormData();
   data.append("torrents", docPicked as any, docPicked.name ?? "torrent");

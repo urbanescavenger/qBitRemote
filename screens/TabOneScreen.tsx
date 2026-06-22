@@ -8,6 +8,7 @@ import { StyleSheet, FlatList, TouchableOpacity, ColorSchemeName, TouchableNativ
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import { ProgressBar, Appbar } from 'react-native-paper';
+import { qbLogin, qbGet } from '../global/qbApi';
 
 
 
@@ -19,50 +20,28 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
 
 
   const loginQbit = async () => {
-    var formdata = new FormData();
-    formdata.append("username", "jbcbro");
-    formdata.append("password", "jonas1209");
-    
-    var requestOptions = {
-      method: 'POST',
-      redirect: 'follow',
-      body: formdata,
-    };
-    fetch((userSettings.ssl == 'true' ? 'https://':'http://') + userSettings.host + ":" + userSettings.port + "/api/v2/auth/login?username=" + userSettings.username + "&password=" + userSettings.password + "", requestOptions)
-      .then(response => response.text())
-      .then(result => console.log(result)).then(() => getTorrentsQbit())
-      .catch(error => console.log('error', error));
+    await qbLogin(userSettings);
+    getTorrentsQbit();
+    getTorrentsQbitInfo();
   }
 
 
   const getTorrentsQbitInfo = async () => {
-    console.log(clinetInfo);
-    var myHeaders = new Headers();
-
-    var requestOptions = {
-      method: 'GET',
-      headers: myHeaders,
-    };
-    await fetch((userSettings.ssl == 'true' ? 'https://':'http://') + userSettings.host + ":" + userSettings.port + "/api/v2/transfer/info", requestOptions)
-      .then(response => response.json())
-      .then(result => setClientInfo(result))
-      .catch(error => console.log('error', error));
+    const result = await qbGet(userSettings, '/api/v2/transfer/info');
+    if (result) {
+      setClientInfo(result);
+    }
   }
 
   const getTorrentsQbit = async () => {
-    var myHeaders = new Headers();
+    getTorrentsQbitInfo();
 
-    var requestOptions = {
-      method: 'GET',
-      headers: myHeaders,
-    };
-
-    getTorrentsQbitInfo;
-    
-    await fetch((userSettings.ssl == 'true' ? 'https://':'http://') + userSettings.host + ":" + userSettings.port + "/api/v2/torrents/info?sort=added_on&reverse=true", requestOptions)
-      .then(response => response.json())
-      .then(result => setTorrents(result)).then(result => console.log('Recicved')).then(() => setRefreshed(false))
-      .catch(error => console.log('error', error));
+    const result = await qbGet(userSettings, '/api/v2/torrents/info?sort=added_on&reverse=true');
+    if (result) {
+      setTorrents(result);
+      console.log('Recicved');
+      setRefreshed(false);
+    }
   }
 
 

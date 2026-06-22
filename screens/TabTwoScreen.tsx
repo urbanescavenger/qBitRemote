@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { StyleSheet, Image, TextInput, KeyboardAvoidingView, Button, Scrollview  } from 'react-native';
 import AppContext from '../global/AppContext'
 import EditScreenInfo from '../components/EditScreenInfo';
+import { qbLogin } from '../global/qbApi';
 import { Text, View } from '../components/Themed';
 import * as SecureStore from 'expo-secure-store';
 
@@ -36,16 +37,9 @@ export default function TabTwoScreen({navigation}) {
 
 
 
-const testLogin = () => {
-
-
-var xhr = new XMLHttpRequest();
-xhr.withCredentials = true;
-
-xhr.addEventListener("readystatechange", function() {
-  if(this.readyState === 4) {
-    console.log(this.responseText);
-    if(this.responseText == "Ok.") {
+const testLogin = async () => {
+  const ok = await qbLogin({ host, port, ssl: userSettings.ssl, username, password });
+  if (ok) {
 save('host', host);
 save('port', port);
 save('username', username);
@@ -58,16 +52,7 @@ alert('Settings saved')
     } else {
       alert('Could not auth with server.')
     }
-  }
-});
-
-xhr.open("GET", (userSettings.ssl == 'true' ? 'https://':'http://')+host+":"+port+"/api/v2/auth/login?username="+username+"&password="+password+"");
-xhr.send();
-
-
-
 }
-  
   return (
     <View darkColor="black" style={styles.container}>
       <Image style={{width: 100, height: 100}} source={require('../assets/images/icon2.png')} />

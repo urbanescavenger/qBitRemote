@@ -6,6 +6,7 @@ import AppContext from '../global/AppContext'
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import * as SecureStore from 'expo-secure-store';
+import { qbLogin } from '../global/qbApi';
 
 
 async function save(key, value) {
@@ -42,22 +43,13 @@ export default function HostScreen() {
   }
 
 
-const testLogin = () => {
+const testLogin = async () => {
 
 save('ssl', isSwitchOn.toString());
 userSettings.setSsl(isSwitchOn.toString());
 
-var data = new FormData();
-data.append("username", username);
-data.append("password", password);
-
-var xhr = new XMLHttpRequest();
-xhr.withCredentials = true;
-
-xhr.addEventListener("readystatechange", function() {
-  if(this.readyState === 4) {
-    console.log(this.responseText);
-    if(this.responseText == "Ok.") {
+const ok = await qbLogin({ host, port, ssl: isSwitchOn.toString(), username, password });
+if (ok) {
 save('host', host);
 save('port', port);
 save('username', username);
@@ -72,16 +64,9 @@ userSettings.setPassword(password);
 userSettings.setSsl(isSwitchOn.toString());
 
 alert('Settings saved')
-    } else {
-      alert('Could not auth with server.')
-    }
-  }
-});
-console.log((isSwitchOn ? 'https://':'http://')+host+":"+port+"/api/v2/auth/login")
-xhr.open("POST",(isSwitchOn ? 'https://':'http://')+host+":"+port+"/api/v2/auth/login");
-xhr.send(data);
-
-console.log(isSwitchOn)
+} else {
+  alert('Could not auth with server.')
+}
 
 }
   
