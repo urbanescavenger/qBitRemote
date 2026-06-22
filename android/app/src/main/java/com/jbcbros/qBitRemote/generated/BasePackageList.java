@@ -2,7 +2,7 @@ package com.jbcbros.qBitRemote.generated;
 
 import java.util.Arrays;
 import java.util.List;
-import org.unimodules.core.interfaces.Package;
+import expo.modules.core.interfaces.Package;
 
 public class BasePackageList {
   public List<Package> getPackageList() {

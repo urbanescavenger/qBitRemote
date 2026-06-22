@@ -13,11 +13,11 @@ import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.jbcbros.qBitRemote.generated.BasePackageList;
 
-import org.unimodules.adapters.react.ReactAdapterPackage;
-import org.unimodules.adapters.react.ModuleRegistryAdapter;
-import org.unimodules.adapters.react.ReactModuleRegistryProvider;
-import org.unimodules.core.interfaces.Package;
-import org.unimodules.core.interfaces.SingletonModule;
+import expo.modules.adapters.react.ReactAdapterPackage;
+import expo.modules.adapters.react.ModuleRegistryAdapter;
+import expo.modules.adapters.react.ReactModuleRegistryProvider;
+import expo.modules.core.interfaces.Package;
+import expo.modules.core.interfaces.SingletonModule;
 import expo.modules.updates.UpdatesController;
 
 import com.facebook.react.bridge.JSIModulePackage;
