@@ -30,7 +30,7 @@ export default function InfoScreen({ route, navigation }) {
         },
         {
           text: "删除", onPress: async () => {
-            const r = await qbAction(userSettings, "/api/v2/torrents/delete?hashes=" + data.hash + "&deleteFiles=true");
+            const r = await qbAction(userSettings, "/api/v2/torrents/delete", { hashes: data.hash, deleteFiles: "true" });
             if (r.ok) {
               Vibration.vibrate();
               navigation.goBack();
@@ -43,15 +43,15 @@ export default function InfoScreen({ route, navigation }) {
     );
   }
   const pauseTorrent = async () => {
-    const r = await qbAction(userSettings, "/api/v2/torrents/pause?hashes=" + data.hash);
+    const r = await qbAction(userSettings, "/api/v2/torrents/stop", { hashes: data.hash });
     if (r.ok) { Vibration.vibrate(); } else { alert(`无法暂停种子。\n\n${reason(r)}`); }
   }
   const recheckTorrent = async () => {
-    const r = await qbAction(userSettings, "/api/v2/torrents/recheck?hashes=" + data.hash);
+    const r = await qbAction(userSettings, "/api/v2/torrents/recheck", { hashes: data.hash });
     if (r.ok) { Vibration.vibrate(); } else { alert(`无法重新校验种子。\n\n${reason(r)}`); }
   }
   const resumeTorrent = async () => {
-    const r = await qbAction(userSettings, "/api/v2/torrents/resume?hashes=" + data.hash);
+    const r = await qbAction(userSettings, "/api/v2/torrents/start", { hashes: data.hash });
     if (r.ok) { Vibration.vibrate(); } else { alert(`无法恢复种子。\n\n${reason(r)}`); }
   }
 

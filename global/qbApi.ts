@@ -64,14 +64,24 @@ export async function qbPost(s: any, path: string, body: FormData): Promise<stri
   }
 }
 
-// Run a control action (pause/resume/recheck/delete, ...) as GET-with-query.
-// Carries the SID cookie (credentials:'include') and reports success the same
-// way as login/add: 204 (newer qBittorrent) or 200 "Ok." (older).
-export async function qbAction(s: any, path: string): Promise<QbLoginResult> {
+// Run a control action (stop/start/recheck/delete, ...) as POST with the params
+// urlencoded in the body (qBittorrent reads POST params from the body, not the
+// query). Carries the SID cookie (credentials:'include') and reports success the
+// same way as login/add: 204 (newer qBittorrent) or 200 "Ok." (older).
+export async function qbAction(
+  s: any,
+  path: string,
+  params: Record<string, string> = {}
+): Promise<QbLoginResult> {
+  const body = Object.entries(params)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
   try {
     const res = await fetch(`${qbBaseUrl(s)}${path}`, {
-      method: 'GET',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       credentials: 'include',
+      body,
     });
     const text = (await res.text()).trim();
     const ok = res.status === 204
