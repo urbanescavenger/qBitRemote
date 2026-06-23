@@ -38,11 +38,16 @@ async function getValueFor() {
  let ssl = await SecureStore.getItemAsync('ssl');
   setSsl(ssl);
 
+ let nickname = await SecureStore.getItemAsync('nickname');
+  setNickname(nickname ?? 'Remote');
+
   setLoading(false)
 }
 
 
- getValueFor();
+  useEffect(() => {
+    getValueFor();
+  }, []);
 
 
 const userSettings = {

@@ -56,6 +56,7 @@ save('port', port);
 save('username', username);
 save('passwordRes', password);
 save('ssl', isSwitchOn.toString());
+save('nickname', nickname);
 
 
 userSettings.setHost(host);
@@ -63,6 +64,7 @@ userSettings.setPort(port);
 userSettings.setUsername(username);
 userSettings.setPassword(password);
 userSettings.setSsl(isSwitchOn.toString());
+userSettings.setNickname(nickname);
 
 alert('设置已保存')
 } else {

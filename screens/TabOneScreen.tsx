@@ -15,7 +15,7 @@ import { qbLogin, qbGet } from '../global/qbApi';
 
 export default function TabOneScreen({ navigation, colorScheme }: { navigation: any, colorScheme: ColorSchemeName }) {
   const [torrents, setTorrents] = useState([]);
-  const [clinetInfo, setClientInfo] = useState([]);
+  const [clientInfo, setClientInfo] = useState([]);
 
   const userSettings: any = useContext(AppContext);
 
@@ -109,7 +109,7 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
           <RNView style={{ flex: 1 }}>
             <RNText style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>远程</RNText>
             <RNText style={{ color: '#dbeafe', fontSize: 12, marginTop: 2 }}>
-              ↑{clinetInfo.up_info_speed == null ? '0' : formatBytes(clinetInfo.up_info_speed)}/s  ↓{clinetInfo.dl_info_speed == null ? '0' : formatBytes(clinetInfo.dl_info_speed)}/s
+              ↑{clientInfo.up_info_speed == null ? '0' : formatBytes(clientInfo.up_info_speed)}/s  ↓{clientInfo.dl_info_speed == null ? '0' : formatBytes(clientInfo.dl_info_speed)}/s
             </RNText>
           </RNView>
           <TouchableOpacity onPress={_handleMore} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={{ paddingHorizontal: 12 }}>
@@ -136,23 +136,28 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
 
               {(() => {
-                if (item.state == 'stalledUP') {
-                  return (
-                    <Text style={styles.markdown}>做种</Text>
-                  )
-                }
-                if (item.state == 'pausedDL') {
-                  return (
-                    <Text style={styles.markdown}>已暂停</Text>
-                  )
-                }
-                if (item.state == 'uploading') {
-                  return (
-                    <Text style={styles.markdown}>做种</Text>
-                  )
-                }
-
-                return <Text style={styles.markdown}>{item.state}</Text>;
+                const stateLabel: { [k: string]: string } = {
+                  error: '出错',
+                  missingFiles: '缺失文件',
+                  uploading: '做种',
+                  pausedUP: '已暂停',
+                  queuedUP: '排队做种',
+                  stalledUP: '做种',
+                  checkingUP: '校验中',
+                  forcedUP: '强制做种',
+                  allocating: '分配空间',
+                  downloading: '下载中',
+                  metaDL: '下载元数据',
+                  pausedDL: '已暂停',
+                  queuedDL: '排队下载',
+                  stalledDL: '下载中',
+                  checkingDL: '校验中',
+                  forcedDL: '强制下载',
+                  checkingResumeData: '校验中',
+                  moving: '移动文件',
+                  unknown: '未知',
+                };
+                return <Text style={styles.markdown}>{stateLabel[item.state] ?? item.state}</Text>;
               })()}
 
               <Text style={styles.markdown}>↑ {formatBytes(item.uploaded)} ↓ {
@@ -167,7 +172,7 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
 
 
         )}
-        keyExtractor={({ hash }, index) => hash}
+        keyExtractor={({ hash }, index) => hash || String(index)}
       />
 
 

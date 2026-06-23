@@ -23,7 +23,7 @@ export default function UploadScreen({
   const [allCat, setAllCat] = useState([]);
   const [docPicked, setDocPicked] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
-  const [text, onChangeText] = React.useState("");
+  const [magnet, setMagnet] = React.useState("");
 
   const login = async () => {
     await qbLogin(userSettings);
@@ -40,12 +40,18 @@ export default function UploadScreen({
     pickerRef.current.blur();
   }
 
-  const addTorrent = async () => {
-    const texts = await Clipboard.getStringAsync()
+  // POST a magnet link / URL string to qBittorrent. Shared by the manual input
+  // box and the "add from clipboard" button; respects the selected category.
+  const addByUrl = async (urls: string) => {
+    const trimmed = (urls ?? "").trim();
+    if (!trimmed) {
+      alert("未提供磁链或 URL");
+      return;
+    }
     await qbLogin(userSettings);
 
     var formdata = new FormData();
-    formdata.append("urls", texts);
+    formdata.append("urls", trimmed);
     if(selectedCat != "uncategorized") {
       formdata.append("category", selectedCat);
   }
@@ -62,6 +68,11 @@ export default function UploadScreen({
       console.log('error', error);
       alert(`无法添加种子。\n\nnetwork: ${error?.message ?? String(error)}`)
     }
+  }
+
+  const addFromClipboard = async () => {
+    const texts = await Clipboard.getStringAsync();
+    addByUrl(texts);
   }
   const check = (status: number, body: string) => {
     // Newer qBittorrent returns 204 No Content on success; older returns 200 "Ok."
@@ -141,7 +152,7 @@ const sendTorrent = async () => {
       <View darkColor="#1c1c1c" style={styles.cards}>
         <Button
           title='从剪贴板添加'
-          onPress={() => addTorrent()}
+          onPress={() => addFromClipboard()}
         />
 
 
@@ -156,6 +167,25 @@ const sendTorrent = async () => {
 
 
  
+
+      <Text style={styles.info}>磁链 / URL</Text>
+      <View darkColor="#1c1c1c" style={styles.cards}>
+        <TextInput
+          placeholder={"粘贴磁链或 URL"}
+          style={styles.input}
+          onChangeText={setMagnet}
+          value={magnet}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+
+        <Button
+          title='添加'
+          onPress={() => addByUrl(magnet)}
+        />
+      </View>
 
       <Text style={styles.info}>选择分类 </Text>
       <View darkColor="#1c1c1c" style={styles.cards}>
