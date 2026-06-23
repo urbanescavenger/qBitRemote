@@ -54,7 +54,8 @@ import com.jbcbros.qbitremote.data.model.Torrent
 import com.jbcbros.qbitremote.util.formatBytes
 import com.jbcbros.qbitremote.util.formatSpeed
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+
 @Composable
 fun HomeScreen(
     onNavigateToUpload: () -> Unit,
