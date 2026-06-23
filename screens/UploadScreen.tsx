@@ -3,9 +3,8 @@ import AppContext from '../global/AppContext'
 
 import { Text, View } from '../components/Themed';
 import EditScreenInfo from '../components/EditScreenInfo';
-import {Picker} from '@react-native-picker/picker';
 
-import { StyleSheet, TouchableOpacity, TextInput, Button, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, TextInput, Button, ScrollView, Modal, FlatList } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,10 +18,11 @@ export default function UploadScreen({
   const userSettings:any = useContext(AppContext);
 
   const [selectedCat, setSelectedCat] = useState("uncategorized");
-  const [allCat, setAllCat] = useState([]);
+  const [allCat, setAllCat] = useState<Record<string, any>>({});
   const [docPicked, setDocPicked] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
   const [magnet, setMagnet] = React.useState("");
+  const [catPickerOpen, setCatPickerOpen] = React.useState(false);
 
   // POST a magnet link / URL string to qBittorrent. Shared by the manual input
   // box and the "add from clipboard" button; respects the selected category.
@@ -72,7 +72,7 @@ export default function UploadScreen({
 const getCategory = async () => {
     const result = await qbGet(userSettings, '/api/v2/sync/maindata');
     if (result) {
-      setAllCat(result.categories);
+      setAllCat(result.categories ?? {});
     }
 }
 
@@ -168,30 +168,67 @@ const sendTorrent = async () => {
       <Text style={styles.info}>选择分类 </Text>
       <View darkColor="#1c1c1c" style={styles.cards}>
 
-<Picker  
- selectedValue={selectedCat}
-  onValueChange={(itemValue, itemIndex) =>
-    setSelectedCat(itemValue)
-  }>
-       <Picker.Item label="未分类" value="uncategorized"></Picker.Item>
- {
-  Object.keys(allCat).map(function(key) {
-    return (
-      <Picker.Item label={allCat[key].name} value={allCat[key].name}></Picker.Item>
-    )
- 
-  })
+        <TouchableOpacity
+          style={styles.catRow}
+          onPress={() => setCatPickerOpen(true)}
+        >
+          <Text style={styles.catLabel}>
+            {selectedCat === 'uncategorized' ? '未分类' : selectedCat}
+          </Text>
+          <Ionicons name="chevron-down" size={18} color="#888" />
+        </TouchableOpacity>
 
- }
+        <Modal
+          visible={catPickerOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setCatPickerOpen(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setCatPickerOpen(false)}
+          >
+            <View style={styles.modalSheet} lightColor="#fff" darkColor="#2a2a2a">
+              <Text style={styles.modalTitle}>选择分类</Text>
+              <FlatList
+                data={[
+                  { name: 'uncategorized', label: '未分类' },
+                  ...Object.keys(allCat ?? {}).map((key) => ({
+                    name: allCat[key].name,
+                    label: allCat[key].name,
+                  })),
+                ]}
+                keyExtractor={(item) => item.name}
+                renderItem={({ item }) => {
+                  const active = item.name === selectedCat;
+                  return (
+                    <TouchableOpacity
+                      style={[styles.catOption, active && styles.catOptionActive]}
+                      onPress={() => {
+                        setSelectedCat(item.name);
+                        setCatPickerOpen(false);
+                      }}
+                    >
+                      <Text style={[styles.catOptionText, active && styles.catOptionTextActive]}>
+                        {item.label}
+                      </Text>
+                      {active && <Ionicons name="checkmark" size={18} color="#2f6fed" />}
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+        </Modal>
 
-</Picker>
+        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
-
-<Button
+        <Button
           title='发送'
           onPress={() => sendTorrent()}
         />
-        
+
 
       </View>
 
@@ -289,6 +326,51 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 15,
 
+  },
+  catRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 44,
+    paddingHorizontal: 8,
+  },
+  catLabel: {
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalSheet: {
+    borderRadius: 12,
+    padding: 12,
+    maxHeight: 360,
+  },
+  modalTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+  },
+  catOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  catOptionActive: {
+    backgroundColor: 'rgba(47,111,237,0.12)',
+  },
+  catOptionText: {
+    fontSize: 15,
+  },
+  catOptionTextActive: {
+    color: '#2f6fed',
+    fontWeight: '600',
   },
   getStartedText: {
     fontSize: 17,
