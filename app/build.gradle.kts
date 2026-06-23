@@ -18,9 +18,9 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            val keystorePath = project.properties["key.store"]?.toString()
-            if (!keystorePath.isNullOrBlank()) {
+        val keystorePath = project.properties["key.store"]?.toString()
+        if (!keystorePath.isNullOrBlank()) {
+            create("release") {
                 storeFile = file(keystorePath)
                 keyAlias = project.properties["key.alias"]?.toString() ?: ""
                 storePassword = project.properties["key.store.password"]?.toString() ?: ""
