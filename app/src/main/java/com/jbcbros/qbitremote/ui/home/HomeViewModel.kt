@@ -31,7 +31,8 @@ data class HomeUiState(
     val filter: FilterType = FilterType.All,
     val hasConfig: Boolean = false,
     val error: String? = null,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val snackbarMessage: String? = null
 )
 
 @HiltViewModel
@@ -110,23 +111,36 @@ class HomeViewModel @Inject constructor(
 
     fun pauseTorrent(hash: String) {
         viewModelScope.launch {
-            repository.stopTorrent(hash)
-            refresh()
+            val success = repository.stopTorrent(hash)
+            _uiState.value = _uiState.value.copy(
+                snackbarMessage = if (success) "已暂停" else "暂停失败"
+            )
+            if (success) refresh()
         }
     }
 
     fun resumeTorrent(hash: String) {
         viewModelScope.launch {
-            repository.startTorrent(hash)
-            refresh()
+            val success = repository.startTorrent(hash)
+            _uiState.value = _uiState.value.copy(
+                snackbarMessage = if (success) "已恢复" else "恢复失败"
+            )
+            if (success) refresh()
         }
     }
 
     fun deleteTorrent(hash: String) {
         viewModelScope.launch {
-            repository.deleteTorrent(hash)
-            refresh()
+            val success = repository.deleteTorrent(hash)
+            _uiState.value = _uiState.value.copy(
+                snackbarMessage = if (success) "已删除" else "删除失败"
+            )
+            if (success) refresh()
         }
+    }
+
+    fun clearSnackbar() {
+        _uiState.value = _uiState.value.copy(snackbarMessage = null)
     }
 
     override fun onCleared() {

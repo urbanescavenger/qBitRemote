@@ -9,6 +9,7 @@
     <string name="title_remote">远程</string>
     <string name="hint_search_torrents">搜索种子</string>
     <string name="hint_configure_server">请先配置服务器（设置页面）</string>
+    <string name="hint_empty_torrents">暂无种子</string>
     <string name="filter_all">全部</string>
     <string name="filter_downloading">下载中</string>
     <string name="filter_completed">已完成</string>
