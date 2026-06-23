@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, TouchableOpacity, Button, Vibration, Alert } fr
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
-import { qbAction } from '../global/qbApi';
+import { qbAction, qbGet } from '../global/qbApi';
 
 const reason = (r: any) =>
   r.error ? `network: ${r.error}`
@@ -13,15 +13,45 @@ const reason = (r: any) =>
   : r.status === 403 ? 'HTTP 403 — 被拒绝(可能 IP 被封)'
   : `HTTP ${r.status ?? '?'}: ${r.body ?? ''}`;
 
+function formatBytes(bytes: any, decimals = 2) {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
 export default function InfoScreen({ route, navigation }) {
   const { data } = route.params;
   const userSettings: any = useContext(AppContext);
+
+  // Live snapshot of this torrent, polled every few seconds so the speed
+  // readout stays current. Initialized from the list snapshot in route params.
+  const [torrent, setTorrent] = useState(data);
+
+  const refreshTorrent = async () => {
+    const result = await qbGet(userSettings, `/api/v2/torrents/info?hashes=${encodeURIComponent(torrent.hash)}`);
+    if (Array.isArray(result) && result.length > 0) {
+      setTorrent(result[0]);
+    }
+  };
+
+  useEffect(() => {
+    refreshTorrent();
+    const timer = setInterval(refreshTorrent, 3000);
+    const unsubscribe = navigation.addListener('focus', refreshTorrent);
+    return () => {
+      clearInterval(timer);
+      unsubscribe();
+    };
+  }, [navigation]);
 
 
   const deleteTorrent = () => {
     Alert.alert(
       "删除种子?",
-      data.name,
+      torrent.name,
       [
         {
           text: "取消",
@@ -30,7 +60,7 @@ export default function InfoScreen({ route, navigation }) {
         },
         {
           text: "删除", onPress: async () => {
-            const r = await qbAction(userSettings, "/api/v2/torrents/delete", { hashes: data.hash, deleteFiles: "true" });
+            const r = await qbAction(userSettings, "/api/v2/torrents/delete", { hashes: torrent.hash, deleteFiles: "true" });
             if (r.ok) {
               Vibration.vibrate();
               navigation.goBack();
@@ -43,15 +73,15 @@ export default function InfoScreen({ route, navigation }) {
     );
   }
   const pauseTorrent = async () => {
-    const r = await qbAction(userSettings, "/api/v2/torrents/stop", { hashes: data.hash });
+    const r = await qbAction(userSettings, "/api/v2/torrents/stop", { hashes: torrent.hash });
     if (r.ok) { Vibration.vibrate(); } else { alert(`无法暂停种子。\n\n${reason(r)}`); }
   }
   const recheckTorrent = async () => {
-    const r = await qbAction(userSettings, "/api/v2/torrents/recheck", { hashes: data.hash });
+    const r = await qbAction(userSettings, "/api/v2/torrents/recheck", { hashes: torrent.hash });
     if (r.ok) { Vibration.vibrate(); } else { alert(`无法重新校验种子。\n\n${reason(r)}`); }
   }
   const resumeTorrent = async () => {
-    const r = await qbAction(userSettings, "/api/v2/torrents/start", { hashes: data.hash });
+    const r = await qbAction(userSettings, "/api/v2/torrents/start", { hashes: torrent.hash });
     if (r.ok) { Vibration.vibrate(); } else { alert(`无法恢复种子。\n\n${reason(r)}`); }
   }
 
@@ -96,14 +126,14 @@ export default function InfoScreen({ route, navigation }) {
       <View darkColor="#1c1c1c" style={styles.cards}>
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>名称</Text>
-          <Text style={styles.data} >{data.name} </Text>
+          <Text style={styles.data} >{torrent.name} </Text>
         </View>
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>状态</Text>
-          <Text style={styles.data} >{data.state} </Text>
+          <Text style={styles.data} >{torrent.state} </Text>
         </View>
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -111,21 +141,38 @@ export default function InfoScreen({ route, navigation }) {
 
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>大小</Text>
-          <Text style={styles.data} >{Math.round(data.total_size / (1024 * 1024 * 1024) * 100) / 100} GB </Text>
+          <Text style={styles.data} >{Math.round(torrent.total_size / (1024 * 1024 * 1024) * 100) / 100} GB </Text>
         </View>
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>种子数</Text>
-          <Text style={styles.data} >{data.num_complete}</Text>
+          <Text style={styles.data} >{torrent.num_complete}</Text>
         </View>
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>分类</Text>
-          <Text style={styles.data} >{data.category}</Text>
+          <Text style={styles.data} >{torrent.category}</Text>
         </View>
 
+      </View>
+
+
+
+      <Text style={styles.info}>当前速度</Text>
+      <View darkColor="#1c1c1c" style={styles.cards}>
+        <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={styles.getStartedText}>上传</Text>
+          <Text style={styles.data} >{formatBytes(torrent.upspeed, 1)}/s </Text>
+        </View>
+
+        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+
+        <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={styles.getStartedText}>下载</Text>
+          <Text style={styles.data} >{formatBytes(torrent.dlspeed, 1)}/s </Text>
+        </View>
       </View>
 
 
@@ -134,14 +181,14 @@ export default function InfoScreen({ route, navigation }) {
       <View darkColor="#1c1c1c" style={styles.cards}>
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>已下载</Text>
-          <Text style={styles.data} >{Math.round(data.downloaded / (1024 * 1024 * 1024) * 100) / 100} GB </Text>
+          <Text style={styles.data} >{Math.round(torrent.downloaded / (1024 * 1024 * 1024) * 100) / 100} GB </Text>
         </View>
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>已上传</Text>
-          <Text style={styles.data} >{Math.round(data.uploaded / (1024 * 1024 * 1024) * 100) / 100} GB  </Text>
+          <Text style={styles.data} >{Math.round(torrent.uploaded / (1024 * 1024 * 1024) * 100) / 100} GB  </Text>
         </View>
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -149,14 +196,14 @@ export default function InfoScreen({ route, navigation }) {
 
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>比率</Text>
-          <Text style={styles.data} >{Math.round(data.ratio * 100) / 100}</Text>
+          <Text style={styles.data} >{Math.round(torrent.ratio * 100) / 100}</Text>
         </View>
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
 
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>做种时间</Text>
-          <Text style={styles.data} >{new Date(data.seeding_time * 1000).toISOString().substr(11, 8)}</Text>
+          <Text style={styles.data} >{new Date(torrent.seeding_time * 1000).toISOString().substr(11, 8)}</Text>
         </View>
       </View>
 
@@ -165,7 +212,7 @@ export default function InfoScreen({ route, navigation }) {
       <View darkColor="#1c1c1c" style={styles.cards}>
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>路径</Text>
-          <Text style={styles.data} >{data.save_path}</Text>
+          <Text style={styles.data} >{torrent.save_path}</Text>
         </View>
 
 
@@ -181,7 +228,7 @@ export default function InfoScreen({ route, navigation }) {
       <View darkColor="#1c1c1c" style={styles.cards}>
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>Tracker</Text>
-          <Text style={styles.data} >{data.tracker} </Text>
+          <Text style={styles.data} >{torrent.tracker} </Text>
         </View>
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -190,7 +237,7 @@ export default function InfoScreen({ route, navigation }) {
 
         <View darkColor="rgba(255,255,255,0)" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.getStartedText}>数量</Text>
-          <Text style={styles.data} >{data.trackers_count}</Text>
+          <Text style={styles.data} >{torrent.trackers_count}</Text>
         </View>
 
       </View>

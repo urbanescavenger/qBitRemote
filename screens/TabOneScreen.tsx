@@ -50,9 +50,9 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
 
     loginQbit();
 
-    const timer = setInterval(() => getTorrentsQbit(), 90000)
+    const timer = setInterval(() => getTorrentsQbit(), 3000)
 
-    const timerInfo = setInterval(() => getTorrentsQbitInfo(), 90000)
+    const timerInfo = setInterval(() => getTorrentsQbitInfo(), 3000)
 
 
     const unsubscribe = navigation.addListener('focus', () => {
@@ -61,7 +61,11 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
       getTorrentsQbitInfo()
     });
 
-    return unsubscribe;
+    return () => {
+      clearInterval(timer);
+      clearInterval(timerInfo);
+      unsubscribe();
+    };
   }, [navigation]);
 
 
@@ -154,6 +158,7 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
               <Text style={styles.markdown}>↑ {formatBytes(item.uploaded)} ↓ {
 
                 formatBytes(item.downloaded)}</Text>
+              <Text style={styles.markdown}>↑ {formatBytes(item.upspeed, 1)}/s ↓ {formatBytes(item.dlspeed, 1)}/s</Text>
               <Text style={styles.markdown}>{Math.round(item.ratio * 100) / 100}</Text>
             </View>
 
