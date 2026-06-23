@@ -1,3 +1,99 @@
 <resources>
     <string name="app_name">qBitRemote</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">首页</string>
+    <string name="nav_settings">设置</string>
+
+    <!-- Home Screen -->
+    <string name="title_remote">远程</string>
+    <string name="hint_search_torrents">搜索种子</string>
+    <string name="hint_configure_server">请先配置服务器（设置页面）</string>
+    <string name="filter_all">全部</string>
+    <string name="filter_downloading">下载中</string>
+    <string name="filter_completed">已完成</string>
+
+    <!-- Torrent States -->
+    <string name="state_error">出错</string>
+    <string name="state_missing_files">缺失文件</string>
+    <string name="state_uploading">做种</string>
+    <string name="state_paused_up">已暂停</string>
+    <string name="state_queued_up">排队做种</string>
+    <string name="state_stalled_up">做种</string>
+    <string name="state_checking_up">校验中</string>
+    <string name="state_forced_up">强制做种</string>
+    <string name="state_allocating">分配空间</string>
+    <string name="state_downloading">下载中</string>
+    <string name="state_meta_dl">下载元数据</string>
+    <string name="state_paused_dl">已暂停</string>
+    <string name="state_queued_dl">排队下载</string>
+    <string name="state_stalled_dl">下载中</string>
+    <string name="state_checking_dl">校验中</string>
+    <string name="state_forced_dl">强制下载</string>
+    <string name="state_checking_resume_data">校验中</string>
+    <string name="state_moving">移动文件</string>
+    <string name="state_unknown">未知</string>
+
+    <!-- Long Press Actions -->
+    <string name="action_pause">暂停</string>
+    <string name="action_resume">恢复</string>
+    <string name="action_delete">删除</string>
+
+    <!-- Detail Screen -->
+    <string name="title_torrent_detail">种子详情</string>
+    <string name="label_actions">操作</string>
+    <string name="action_recheck">重新校验</string>
+    <string name="action_delete_torrent">删除种子</string>
+    <string name="label_basic_info">基本信息</string>
+    <string name="label_current_speed">当前速度</string>
+    <string name="label_download_info">下载信息</string>
+    <string name="label_storage">存储</string>
+    <string name="label_name">名称</string>
+    <string name="label_state">状态</string>
+    <string name="label_size">大小</string>
+    <string name="label_seeders">种子数</string>
+    <string name="label_category">分类</string>
+    <string name="label_upload">上传</string>
+    <string name="label_download">下载</string>
+    <string name="label_downloaded">已下载</string>
+    <string name="label_uploaded">已上传</string>
+    <string name="label_ratio">比率</string>
+    <string name="label_seeding_time">做种时间</string>
+    <string name="label_path">路径</string>
+    <string name="dialog_delete_torrent_title">删除种子?</string>
+    <string name="action_cancel">取消</string>
+
+    <!-- Upload Screen -->
+    <string name="title_add_torrent">添加种子</string>
+    <string name="label_magnet_url">磁链 / URL</string>
+    <string name="action_add_from_clipboard">从剪贴板添加</string>
+    <string name="action_select_torrent_file">选择种子文件</string>
+    <string name="label_category_select">分类</string>
+    <string name="category_uncategorized">未分类</string>
+    <string name="action_add">添加</string>
+    <string name="msg_adding">添加中…</string>
+    <string name="msg_add_success">添加成功</string>
+    <string name="msg_add_failed">添加失败</string>
+
+    <!-- Settings Screen -->
+    <string name="title_settings">设置</string>
+    <string name="label_nickname">昵称</string>
+    <string name="hint_nickname">服务器名</string>
+    <string name="label_host">地址</string>
+    <string name="hint_host">qBittorrent 地址</string>
+    <string name="label_port">端口</string>
+    <string name="hint_port">WebUI 端口</string>
+    <string name="label_enable_ssl">启用 SSL</string>
+    <string name="label_username">用户名</string>
+    <string name="hint_username">输入用户名</string>
+    <string name="label_password">密码</string>
+    <string name="hint_password">输入密码</string>
+    <string name="msg_testing">测试中…</string>
+    <string name="action_save">保存</string>
+    <string name="msg_login_success">登录成功，已保存</string>
+    <string name="msg_test_failed">无法通过验证。</string>
+
+    <!-- Messages -->
+    <string name="msg_empty_url">未提供链接</string>
+    <string name="msg_no_config">未配置服务器</string>
 </resources>

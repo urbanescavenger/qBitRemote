@@ -21,7 +21,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.jbcbros.qbitremote.ui.home.HomeScreen
+import androidx.compose.ui.res.stringResource
+import com.jbcbros.qbitremote.R
 import com.jbcbros.qbitremote.ui.settings.SettingsScreen
 import com.jbcbros.qbitremote.ui.upload.UploadScreen
 import com.jbcbros.qbitremote.ui.detail.TorrentDetailScreen
@@ -48,8 +49,8 @@ fun AppNavHost() {
             if (showBottomBar) {
                 NavigationBar {
                     val items = listOf(
-                        Triple(Screen.Home, Icons.Default.Home, "首页"),
-                        Triple(Screen.Settings, Icons.Default.Settings, "设置")
+                        Triple(Screen.Home, Icons.Default.Home, stringResource(R.string.nav_home)),
+                        Triple(Screen.Settings, Icons.Default.Settings, stringResource(R.string.nav_settings))
                     )
                     items.forEach { (screen, icon, label) ->
                         val selected = navBackStackEntry?.destination?.hierarchy?.any { it.route == screen.route } == true

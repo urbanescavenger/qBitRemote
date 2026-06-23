@@ -1,6 +1,5 @@
 package com.jbcbros.qbitremote.ui.upload
 
-import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,9 +32,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jbcbros.qbitremote.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +56,7 @@ fun UploadScreen(
     }
 
     LaunchedEffect(uiState.resultMessage) {
-        if (uiState.resultMessage == "添加成功") {
+        if (uiState.resultMessage == stringResource(R.string.msg_add_success)) {
             onNavigateBack()
         }
     }
@@ -62,10 +64,10 @@ fun UploadScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("添加种子") },
+                title = { Text(stringResource(R.string.title_add_torrent)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_cancel))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors()
@@ -81,8 +83,8 @@ fun UploadScreen(
             OutlinedTextField(
                 value = uiState.magnetUrl,
                 onValueChange = viewModel::setMagnet,
-                label = { Text("磁链 / URL") },
-                placeholder = { Text("粘贴磁链或 URL") },
+                label = { Text(stringResource(R.string.label_magnet_url)) },
+                placeholder = { Text(stringResource(R.string.label_magnet_url)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -93,7 +95,7 @@ fun UploadScreen(
                 onClick = { viewModel.readClipboard(context) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("从剪贴板添加")
+                Text(stringResource(R.string.action_add_from_clipboard))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -103,7 +105,7 @@ fun UploadScreen(
                 enabled = !uiState.isSubmitting,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("选择种子文件")
+                Text(stringResource(R.string.action_select_torrent_file))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -113,10 +115,10 @@ fun UploadScreen(
                 onExpandedChange = { expanded = !expanded }
             ) {
                 OutlinedTextField(
-                    value = if (uiState.selectedCategory == "uncategorized") "未分类" else uiState.selectedCategory,
+                    value = if (uiState.selectedCategory == "uncategorized") stringResource(R.string.category_uncategorized) else uiState.selectedCategory,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("分类") },
+                    label = { Text(stringResource(R.string.label_category_select)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -128,7 +130,7 @@ fun UploadScreen(
                 ) {
                     uiState.categories.forEach { category ->
                         DropdownMenuItem(
-                            text = { Text(if (category == "uncategorized") "未分类" else category) },
+                            text = { Text(if (category == "uncategorized") stringResource(R.string.category_uncategorized) else category) },
                             onClick = {
                                 viewModel.setCategory(category)
                                 expanded = false
@@ -145,12 +147,12 @@ fun UploadScreen(
                 enabled = !uiState.isSubmitting,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (uiState.isSubmitting) "添加中…" else "添加")
+                Text(if (uiState.isSubmitting) stringResource(R.string.msg_adding) else stringResource(R.string.action_add))
             }
 
-            if (uiState.resultMessage != null && uiState.resultMessage != "添加成功") {
+            if (uiState.resultMessage != null && uiState.resultMessage != stringResource(R.string.msg_add_success)) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = uiState.resultMessage ?: "", color = androidx.compose.ui.graphics.Color.Red)
+                Text(text = uiState.resultMessage ?: "", color = Color.Red)
             }
         }
     }

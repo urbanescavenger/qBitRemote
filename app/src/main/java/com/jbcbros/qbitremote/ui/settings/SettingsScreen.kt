@@ -25,8 +25,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jbcbros.qbitremote.R
 
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
@@ -35,7 +37,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("设置") },
+                title = { Text(stringResource(R.string.title_settings)) },
                 colors = TopAppBarDefaults.topAppBarColors()
             )
         }
@@ -49,8 +51,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             OutlinedTextField(
                 value = uiState.nickname,
                 onValueChange = viewModel::updateNickname,
-                label = { Text("昵称") },
-                placeholder = { Text("服务器名") },
+                label = { Text(stringResource(R.string.label_nickname)) },
+                placeholder = { Text(stringResource(R.string.hint_nickname)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -59,8 +61,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             OutlinedTextField(
                 value = uiState.host,
                 onValueChange = viewModel::updateHost,
-                label = { Text("地址") },
-                placeholder = { Text("qBittorrent 地址") },
+                label = { Text(stringResource(R.string.label_host)) },
+                placeholder = { Text(stringResource(R.string.hint_host)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -69,8 +71,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             OutlinedTextField(
                 value = uiState.port,
                 onValueChange = viewModel::updatePort,
-                label = { Text("端口") },
-                placeholder = { Text("WebUI 端口") },
+                label = { Text(stringResource(R.string.label_port)) },
+                placeholder = { Text(stringResource(R.string.hint_port)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -80,7 +82,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("启用 SSL", modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.label_enable_ssl), modifier = Modifier.weight(1f))
                 Switch(checked = uiState.ssl, onCheckedChange = viewModel::updateSsl)
             }
 
@@ -89,8 +91,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             OutlinedTextField(
                 value = uiState.username,
                 onValueChange = viewModel::updateUsername,
-                label = { Text("用户名") },
-                placeholder = { Text("输入用户名") },
+                label = { Text(stringResource(R.string.label_username)) },
+                placeholder = { Text(stringResource(R.string.hint_username)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -99,8 +101,8 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
             OutlinedTextField(
                 value = uiState.password,
                 onValueChange = viewModel::updatePassword,
-                label = { Text("密码") },
-                placeholder = { Text("输入密码") },
+                label = { Text(stringResource(R.string.label_password)) },
+                placeholder = { Text(stringResource(R.string.hint_password)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -111,7 +113,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 enabled = !uiState.isTesting,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (uiState.isTesting) "测试中…" else "保存")
+                Text(if (uiState.isTesting) stringResource(R.string.msg_testing) else stringResource(R.string.action_save))
             }
 
             if (uiState.testResult != null) {

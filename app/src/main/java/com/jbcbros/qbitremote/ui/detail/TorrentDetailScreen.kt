@@ -33,10 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.ui.platform.LocalContext
+import com.jbcbros.qbitremote.R
 import com.jbcbros.qbitremote.util.formatBytes
 import com.jbcbros.qbitremote.util.formatSpeed
 
@@ -75,10 +77,10 @@ fun TorrentDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("种子详情") },
+                title = { Text(stringResource(R.string.title_torrent_detail)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_cancel))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors()
@@ -92,19 +94,19 @@ fun TorrentDetailScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            SectionTitle("操作")
+            SectionTitle(stringResource(R.string.label_actions))
             OutlinedCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Button(onClick = { viewModel.pauseTorrent(hash) }, modifier = Modifier.fillMaxWidth()) {
-                        Text("暂停")
+                        Text(stringResource(R.string.action_pause))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(onClick = { viewModel.resumeTorrent(hash) }, modifier = Modifier.fillMaxWidth()) {
-                        Text("恢复")
+                        Text(stringResource(R.string.action_resume))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(onClick = { viewModel.recheckTorrent(hash) }, modifier = Modifier.fillMaxWidth()) {
-                        Text("重新校验")
+                        Text(stringResource(R.string.action_recheck))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
@@ -112,35 +114,35 @@ fun TorrentDetailScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("删除种子")
+                        Text(stringResource(R.string.action_delete_torrent))
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            SectionTitle("基本信息")
+            SectionTitle(stringResource(R.string.label_basic_info))
             InfoCard(
-                "名称" to (torrent?.name ?: "-"),
-                "状态" to (torrent?.state ?: "-"),
-                "大小" to (torrent?.total_size?.let { "${formatBytes(it)}" } ?: "-"),
-                "种子数" to (torrent?.num_complete?.toString() ?: "-"),
-                "分类" to (torrent?.category ?: "-")
+                stringResource(R.string.label_name) to (torrent?.name ?: "-"),
+                stringResource(R.string.label_state) to (torrent?.state ?: "-"),
+                stringResource(R.string.label_size) to (torrent?.total_size?.let { "${formatBytes(it)}" } ?: "-"),
+                stringResource(R.string.label_seeders) to (torrent?.num_complete?.toString() ?: "-"),
+                stringResource(R.string.label_category) to (torrent?.category ?: "-")
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            SectionTitle("当前速度")
+            SectionTitle(stringResource(R.string.label_current_speed))
             InfoCard(
-                "上传" to (torrent?.let { formatSpeed(it.upspeed) } ?: "-"),
-                "下载" to (torrent?.let { formatSpeed(it.dlspeed) } ?: "-")
+                stringResource(R.string.label_upload) to (torrent?.let { formatSpeed(it.upspeed) } ?: "-"),
+                stringResource(R.string.label_download) to (torrent?.let { formatSpeed(it.dlspeed) } ?: "-")
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            SectionTitle("下载信息")
+            SectionTitle(stringResource(R.string.label_download_info))
             InfoCard(
-                "已下载" to (torrent?.let { formatBytes(it.downloaded) } ?: "-"),
-                "已上传" to (torrent?.let { formatBytes(it.uploaded) } ?: "-"),
-                "比率" to (torrent?.let { "%.2f".format(it.ratio) } ?: "-"),
-                "做种时间" to (torrent?.seeding_time?.let {
+                stringResource(R.string.label_downloaded) to (torrent?.let { formatBytes(it.downloaded) } ?: "-"),
+                stringResource(R.string.label_uploaded) to (torrent?.let { formatBytes(it.uploaded) } ?: "-"),
+                stringResource(R.string.label_ratio) to (torrent?.let { "%.2f".format(it.ratio) } ?: "-"),
+                stringResource(R.string.label_seeding_time) to (torrent?.seeding_time?.let {
                     val hours = it / 3600
                     val minutes = (it % 3600) / 60
                     val seconds = it % 60
@@ -149,8 +151,8 @@ fun TorrentDetailScreen(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            SectionTitle("存储")
-            InfoCard("路径" to (torrent?.save_path ?: "-"))
+            SectionTitle(stringResource(R.string.label_storage))
+            InfoCard(stringResource(R.string.label_path) to (torrent?.save_path ?: "-"))
 
             Spacer(modifier = Modifier.height(32.dp))
         }
@@ -159,19 +161,19 @@ fun TorrentDetailScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("删除种子?") },
+            title = { Text(stringResource(R.string.dialog_delete_torrent_title)) },
             text = { Text(name) },
             confirmButton = {
                 Button(onClick = {
                     showDeleteDialog = false
                     viewModel.deleteTorrent(hash, onNavigateBack)
                 }) {
-                    Text("删除")
+                    Text(stringResource(R.string.action_delete))
                 }
             },
             dismissButton = {
                 Button(onClick = { showDeleteDialog = false }) {
-                    Text("取消")
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
         )

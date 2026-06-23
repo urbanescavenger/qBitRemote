@@ -108,6 +108,27 @@ class HomeViewModel @Inject constructor(
         return torrents.filter { it.name.lowercase().contains(lowerQuery) }
     }
 
+    fun pauseTorrent(hash: String) {
+        viewModelScope.launch {
+            repository.stopTorrent(hash)
+            refresh()
+        }
+    }
+
+    fun resumeTorrent(hash: String) {
+        viewModelScope.launch {
+            repository.startTorrent(hash)
+            refresh()
+        }
+    }
+
+    fun deleteTorrent(hash: String) {
+        viewModelScope.launch {
+            repository.deleteTorrent(hash)
+            refresh()
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         pollJob?.cancel()
