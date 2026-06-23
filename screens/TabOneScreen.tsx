@@ -23,7 +23,6 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
   const loginQbit = async () => {
     await qbLogin(userSettings);
     getTorrentsQbit();
-    getTorrentsQbitInfo();
   }
 
 
@@ -40,7 +39,6 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
     const result = await qbGet(userSettings, '/api/v2/torrents/info?sort=added_on&reverse=true');
     if (result) {
       setTorrents(result);
-      console.log('Recicved');
       setRefreshed(false);
     }
   }
@@ -52,18 +50,12 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
 
     const timer = setInterval(() => getTorrentsQbit(), 3000)
 
-    const timerInfo = setInterval(() => getTorrentsQbitInfo(), 3000)
-
-
     const unsubscribe = navigation.addListener('focus', () => {
-
       getTorrentsQbit()
-      getTorrentsQbitInfo()
     });
 
     return () => {
       clearInterval(timer);
-      clearInterval(timerInfo);
       unsubscribe();
     };
   }, [navigation]);
@@ -71,7 +63,7 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
 
 
 
-  const onPress = (click: any) => console.log(click) + navigation.navigate('InfoScreen', { data: click });
+  const onPress = (click: any) => navigation.navigate('InfoScreen', { data: click });
   const onPressLong = (clickL: any) => setRefreshed(false);
 
 
@@ -84,8 +76,7 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
   }
 
   function formatBytes(bytes, decimals = 2) {
-    if (bytes === 0) return '0 B';
-    if (bytes === NaN) return '0 B';
+    if (!bytes) return '0 B';
 
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;

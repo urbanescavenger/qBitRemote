@@ -1,5 +1,4 @@
-import { StackScreenProps } from '@react-navigation/stack';
-import React, { useState, useContext, useRef } from 'react'
+import React, { useState, useContext } from 'react'
 import AppContext from '../global/AppContext'
 
 import { Text, View } from '../components/Themed';
@@ -24,21 +23,6 @@ export default function UploadScreen({
   const [docPicked, setDocPicked] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
 
   const [magnet, setMagnet] = React.useState("");
-
-  const login = async () => {
-    await qbLogin(userSettings);
-  }
-
-
-  const pickerRef = useRef();
-
-  function open() {
-    pickerRef.current.focus();
-  }
-  
-  function close() {
-    pickerRef.current.blur();
-  }
 
   // POST a magnet link / URL string to qBittorrent. Shared by the manual input
   // box and the "add from clipboard" button; respects the selected category.
@@ -90,12 +74,6 @@ const getCategory = async () => {
     if (result) {
       setAllCat(result.categories);
     }
-
-      console.log(allCat)
-
-      Object.keys(allCat).map(function(key) {
-        console.log(allCat[key].name);
-      })
 }
 
 const sendTorrent = async () => {

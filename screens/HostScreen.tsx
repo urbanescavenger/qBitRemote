@@ -14,29 +14,15 @@ async function save(key, value) {
 }
 
 
-async function getValueFor(key) {
-  let result = await SecureStore.getItemAsync(key);
-  if (result) {
-    alert("🔐 Here's your value 🔐 \n" + result);
-  } else {
-    alert('No values stored under that key.');
-  }
-}
-
-
 export default function HostScreen() {
 
   const userSettings:any = useContext(AppContext);
 
-  const [key, onChangeKey] = React.useState('');
-  const [value, onChangeValue] = React.useState('');
   const [host, setHost] = React.useState(userSettings.host);
   const [nickname, setNickname] = React.useState(userSettings.nickname ?? '');
   const [port, setPort] = React.useState(userSettings.port);
-  const [ssl, setSsl] = React.useState();
   const [username, setUsername] = React.useState(userSettings.username);
   const [password, setPassword] = React.useState(userSettings.password);
-  const [test, setTest] = React.useState('');
   const [isSwitchOn, setIsSwitchOn] = React.useState(userSettings.ssl == 'true' ? true : false);
   const onToggleSwitch = () => {
     setIsSwitchOn(!isSwitchOn)
