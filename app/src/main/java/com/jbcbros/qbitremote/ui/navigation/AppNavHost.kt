@@ -23,6 +23,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.res.stringResource
 import com.jbcbros.qbitremote.R
+import com.jbcbros.qbitremote.ui.home.HomeScreen
 import com.jbcbros.qbitremote.ui.settings.SettingsScreen
 import com.jbcbros.qbitremote.ui.upload.UploadScreen
 import com.jbcbros.qbitremote.ui.detail.TorrentDetailScreen

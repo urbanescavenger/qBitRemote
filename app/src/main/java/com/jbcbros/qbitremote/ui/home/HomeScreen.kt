@@ -1,5 +1,6 @@
 package com.jbcbros.qbitremote.ui.home
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,7 +54,7 @@ import com.jbcbros.qbitremote.data.model.Torrent
 import com.jbcbros.qbitremote.util.formatBytes
 import com.jbcbros.qbitremote.util.formatSpeed
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToUpload: () -> Unit,
