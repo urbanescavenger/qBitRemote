@@ -9,12 +9,12 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { qbLogin, qbGet, qbBaseUrl } from '../global/qbApi';
-
-import { RootStackParamList } from '../types';
+import { StackScreenProps } from '@react-navigation/stack';
+import { TabOneParamList } from '../types';
 
 export default function UploadScreen({
   navigation,
-}) {
+}: StackScreenProps<TabOneParamList, 'UploadScreen'>) {
   const userSettings:any = useContext(AppContext);
 
   const [selectedCat, setSelectedCat] = useState("uncategorized");
@@ -23,6 +23,7 @@ export default function UploadScreen({
 
   const [magnet, setMagnet] = React.useState("");
   const [catPickerOpen, setCatPickerOpen] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
 
   // POST a magnet link / URL string to qBittorrent. Shared by the manual input
   // box and the "add from clipboard" button; respects the selected category.
@@ -32,6 +33,8 @@ export default function UploadScreen({
       alert("未提供磁链或 URL");
       return;
     }
+    if (submitting) return;
+    setSubmitting(true);
     await qbLogin(userSettings);
 
     var formdata = new FormData();
@@ -48,9 +51,11 @@ export default function UploadScreen({
       });
       const body = await res.text();
       check(res.status, body);
-    } catch (error) {
+    } catch (error: any) {
       console.log('error', error);
       alert(`无法添加种子。\n\nnetwork: ${error?.message ?? String(error)}`)
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -59,11 +64,19 @@ export default function UploadScreen({
     addByUrl(texts);
   }
   const check = (status: number, body: string) => {
-    // Newer qBittorrent returns 204 No Content on success; older returns 200 "Ok."
-    const ok = status === 204
-      || (status === 200 && body.trim().toLowerCase() === 'ok.');
+    // qBittorrent /torrents/add returns:
+    //   200 "Ok."   -> added
+    //   200 "Fails." -> not added (duplicate / invalid magnet)
+    //   204 (some versions) -> added, no body
+    // Some versions return "Ok" without the trailing period or an empty body on
+    // success, so don't require an exact "ok." match — treat any 2xx whose body
+    // doesn't say "fail" as success.
+    const lower = (body ?? "").trim().toLowerCase();
+    const ok = status >= 200 && status < 300 && !lower.includes('fail');
     if (ok) {
       navigation.goBack()
+    } else if (lower.includes('fail')) {
+      alert(`添加失败(可能已存在)。\n\nHTTP ${status}: ${body || '(no body)'}`)
     } else {
       alert(`无法添加种子。\n\nHTTP ${status}: ${body || '(no body)'}`)
     }
@@ -81,6 +94,8 @@ const sendTorrent = async () => {
   if (!docPicked) {
     return;
   }
+  if (submitting) return;
+  setSubmitting(true);
 
   await qbLogin(userSettings);
 
@@ -103,6 +118,7 @@ const sendTorrent = async () => {
     if (this.readyState === 4) {
       console.log(this.responseText);
       check(this.status, this.responseText);
+      setSubmitting(false);
     }
   });
 
@@ -131,6 +147,7 @@ const sendTorrent = async () => {
         <Button
           title='从剪贴板添加'
           onPress={() => addFromClipboard()}
+          disabled={submitting}
         />
 
 
@@ -139,6 +156,7 @@ const sendTorrent = async () => {
         <Button
           title='选择种子文件'
           onPress={() => _pickDocument()}
+          disabled={submitting}
         />
 
       </View>
@@ -160,8 +178,9 @@ const sendTorrent = async () => {
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
         <Button
-          title='添加'
+          title={submitting ? '添加中…' : '添加'}
           onPress={() => addByUrl(magnet)}
+          disabled={submitting}
         />
       </View>
 
@@ -225,8 +244,9 @@ const sendTorrent = async () => {
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
         <Button
-          title='发送'
+          title={submitting ? '发送中…' : '发送'}
           onPress={() => sendTorrent()}
+          disabled={submitting}
         />
 
 

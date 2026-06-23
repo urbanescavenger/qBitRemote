@@ -15,8 +15,12 @@ export type BottomTabParamList = {
 
 export type TabOneParamList = {
   TabOneScreen: undefined;
+  UploadScreen: undefined;
+  InfoScreen: { data: any } | undefined;
 };
 
 export type TabTwoParamList = {
   TabTwoScreen: undefined;
+  Settings: undefined;
+  HostScreen: undefined;
 };
