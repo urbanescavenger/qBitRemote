@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import AppContext from '../global/AppContext'
 
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +19,12 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
 
   const userSettings: any = useContext(AppContext);
 
+  // 全部 / 下载中 / 已完成 筛选。filter 驱动 UI 高亮;filterRef 让 3 秒轮询定时器
+  // (它捕获首次渲染的闭包)也能读到最新值,避免切了筛选后定时器仍拉全部。
+  const FILTERS: [string, string][] = [['all', '全部'], ['downloading', '下载中'], ['completed', '已完成']];
+  const [filter, setFilter] = useState('all');
+  const filterRef = useRef('all');
+
 
   const loginQbit = async () => {
     await qbLogin(userSettings);
@@ -36,11 +42,19 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
   const getTorrentsQbit = async () => {
     getTorrentsQbitInfo();
 
-    const result = await qbGet(userSettings, '/api/v2/torrents/info?sort=added_on&reverse=true');
+    const f = filterRef.current;
+    const filterParam = f !== 'all' ? `&filter=${f}` : '';
+    const result = await qbGet(userSettings, `/api/v2/torrents/info?sort=added_on&reverse=true${filterParam}`);
     if (result) {
       setTorrents(result);
       setRefreshed(false);
     }
+  }
+
+  const selectFilter = (f: string) => {
+    setFilter(f);
+    filterRef.current = f;
+    getTorrentsQbit();
   }
 
 
@@ -109,6 +123,20 @@ export default function TabOneScreen({ navigation, colorScheme }: { navigation: 
         </RNView>
       </SafeAreaView>
 
+      <View style={styles.filterRow}>
+        {FILTERS.map(([key, label]) => {
+          const active = filter === key;
+          return (
+            <TouchableOpacity
+              key={key}
+              onPress={() => selectFilter(key)}
+              style={[styles.filterChip, active && styles.filterChipActive]}
+            >
+              <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>{label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
       <FlatList
         data={torrents}
@@ -196,5 +224,28 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     height: 1,
     width: '80%',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  filterChip: {
+    flex: 1,
+    marginHorizontal: 2,
+    paddingVertical: 8,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  filterChipActive: {
+    backgroundColor: '#2f6fed',
+  },
+  filterChipText: {
+    fontSize: 13,
+    fontWeight: '400',
+  },
+  filterChipTextActive: {
+    color: '#fff',
+    fontWeight: '700',
   },
 });
