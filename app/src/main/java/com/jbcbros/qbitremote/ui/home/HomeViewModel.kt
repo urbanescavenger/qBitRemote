@@ -32,7 +32,9 @@ data class HomeUiState(
     val hasConfig: Boolean = false,
     val error: String? = null,
     val searchQuery: String = "",
-    val snackbarMessage: String? = null
+    val snackbarMessage: String? = null,
+    val categories: List<String> = emptyList(),
+    val selectedCategory: String = ""
 )
 
 @HiltViewModel
@@ -88,6 +90,14 @@ class HomeViewModel @Inject constructor(
                 isRefreshing = false,
                 hasConfig = true
             )
+            loadCategories()
+        }
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            val cats = repository.getCategories()
+            _uiState.value = _uiState.value.copy(categories = cats)
         }
     }
 
@@ -100,6 +110,18 @@ class HomeViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             searchQuery = query,
             torrents = applySearch(allTorrents, query)
+        )
+    }
+
+    fun setCategory(category: String) {
+        _uiState.value = _uiState.value.copy(selectedCategory = category)
+        val filtered = if (category.isBlank()) {
+            allTorrents
+        } else {
+            allTorrents.filter { it.category == category }
+        }
+        _uiState.value = _uiState.value.copy(
+            torrents = applySearch(filtered, _uiState.value.searchQuery)
         )
     }
 
