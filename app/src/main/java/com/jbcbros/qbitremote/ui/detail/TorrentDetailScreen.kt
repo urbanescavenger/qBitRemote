@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.platform.LocalContext
 import com.jbcbros.qbitremote.util.formatBytes
 import com.jbcbros.qbitremote.util.formatSpeed
 
@@ -48,6 +49,7 @@ fun TorrentDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(hash) {
         viewModel.loadTorrent(hash)
@@ -55,7 +57,9 @@ fun TorrentDetailScreen(
 
     LaunchedEffect(uiState.actionMessage) {
         if (uiState.actionMessage != null) {
-            // Toast or Snackbar could be shown here
+            if (uiState.actionMessage != "操作失败") {
+                vibrate(context)
+            }
             viewModel.clearMessage()
         }
     }
@@ -191,5 +195,15 @@ private fun InfoCard(vararg items: Pair<String, String>) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
         }
+    }
+}
+
+private fun vibrate(context: android.content.Context) {
+    val vibrator = context.getSystemService(android.content.Context.VIBRATOR_SERVICE) as android.os.Vibrator
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        vibrator.vibrate(android.os.VibrationEffect.createOneShot(50, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(50)
     }
 }

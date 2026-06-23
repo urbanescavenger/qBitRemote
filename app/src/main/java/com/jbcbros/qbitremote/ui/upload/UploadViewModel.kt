@@ -1,5 +1,9 @@
 package com.jbcbros.qbitremote.ui.upload
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jbcbros.qbitremote.data.repository.QbRepository
@@ -32,10 +36,18 @@ class UploadViewModel @Inject constructor(
 
     fun loadCategories() {
         viewModelScope.launch {
-            // qBittorrent maindata API 返回复杂结构，简化处理
-            // 实际项目中可以解析出分类列表
-            _uiState.value = _uiState.value.copy(categories = listOf("uncategorized"))
+            val cats = repository.getCategories()
+            _uiState.value = _uiState.value.copy(
+                categories = listOf("uncategorized") + cats
+            )
         }
+    }
+
+    fun readClipboard(context: Context): String {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val text = clipboard.primaryClip?.getItemAt(0)?.text?.toString() ?: ""
+        _uiState.value = _uiState.value.copy(magnetUrl = text)
+        return text
     }
 
     fun setMagnet(url: String) {
@@ -48,7 +60,7 @@ class UploadViewModel @Inject constructor(
 
     fun addByUrl(urls: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isSubmitting = true)
+            _uiState.value = _uiState.value.copy(isSubmitting = true, resultMessage = null)
             val trimmed = urls.trim()
             if (trimmed.isEmpty()) {
                 _uiState.value = _uiState.value.copy(isSubmitting = false, resultMessage = "未提供链接")
@@ -56,6 +68,19 @@ class UploadViewModel @Inject constructor(
             }
             val category = if (_uiState.value.selectedCategory == "uncategorized") null else _uiState.value.selectedCategory
             val success = repository.addTorrentByUrl(trimmed, category)
+            _uiState.value = _uiState.value.copy(
+                isSubmitting = false,
+                resultMessage = if (success) "添加成功" else "添加失败"
+            )
+            if (success) onSuccess()
+        }
+    }
+
+    fun addByFile(uri: Uri, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isSubmitting = true, resultMessage = null)
+            val category = if (_uiState.value.selectedCategory == "uncategorized") null else _uiState.value.selectedCategory
+            val success = repository.addTorrentFile(uri, category)
             _uiState.value = _uiState.value.copy(
                 isSubmitting = false,
                 resultMessage = if (success) "添加成功" else "添加失败"

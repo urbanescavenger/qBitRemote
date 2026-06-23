@@ -1,6 +1,7 @@
 package com.jbcbros.qbitremote.data.repository
 
 import android.content.Context
+import android.net.Uri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -16,10 +17,14 @@ import com.jbcbros.qbitremote.data.model.TransferInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -158,6 +163,18 @@ class QbRepository @Inject constructor(
         }
     }
 
+    suspend fun getCategories(): List<String> {
+        val service = apiService ?: return emptyList()
+        return try {
+            val res = service.getCategories()
+            val body = res.body()?.string() ?: return emptyList()
+            val map = com.google.gson.Gson().fromJson(body, Map::class.java) as? Map<String, Map<String, Any>>
+            map?.keys?.toList() ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
     suspend fun addTorrentByUrl(urls: String, category: String? = null): Boolean {
         val service = apiService ?: return false
         return try {
@@ -166,6 +183,27 @@ class QbRepository @Inject constructor(
             res.isSuccessful && !body.contains("fail")
         } catch (e: Exception) {
             false
+        }
+    }
+
+    suspend fun addTorrentFile(uri: Uri, category: String? = null): Boolean {
+        val service = apiService ?: return false
+        return try {
+            context.contentResolver.openInputStream(uri)?.use { stream ->
+                val bytes = stream.readBytes()
+                val fileName = uri.lastPathSegment ?: "torrent"
+                val requestBody = bytes.toRequestBody("application/x-bittorrent".toMediaTypeOrNull())
+                val part = MultipartBody.Part.createFormData("torrents", fileName, requestBody)
+                val categoryBody = category?.let {
+                    it.toRequestBody("text/plain".toMediaTypeOrNull())
+                }
+                val res = service.addTorrentFile(part, categoryBody)
+                val body = res.body()?.string()?.lowercase()?.trim() ?: ""
+                return res.isSuccessful && !body.contains("fail")
+            } ?: return false
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
         }
     }
 

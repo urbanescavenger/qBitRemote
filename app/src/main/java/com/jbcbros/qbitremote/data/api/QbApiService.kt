@@ -1,5 +1,7 @@
 package com.jbcbros.qbitremote.data.api
 
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Field
@@ -32,6 +34,9 @@ interface QbApiService {
     @GET("/api/v2/sync/maindata")
     suspend fun getMainData(): Response<ResponseBody>
 
+    @GET("/api/v2/torrents/categories")
+    suspend fun getCategories(): Response<ResponseBody>
+
     @FormUrlEncoded
     @POST("/api/v2/torrents/add")
     suspend fun addTorrentByUrl(
@@ -42,8 +47,8 @@ interface QbApiService {
     @Multipart
     @POST("/api/v2/torrents/add")
     suspend fun addTorrentFile(
-        @Part("torrents") torrents: okhttp3.MultipartBody.Part,
-        @Part("category") category: okhttp3.RequestBody? = null
+        @Part torrents: MultipartBody.Part,
+        @Part("category") category: RequestBody? = null
     ): Response<ResponseBody>
 
     @FormUrlEncoded

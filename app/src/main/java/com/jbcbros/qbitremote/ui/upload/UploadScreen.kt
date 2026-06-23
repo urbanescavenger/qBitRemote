@@ -1,5 +1,9 @@
 package com.jbcbros.qbitremote.ui.upload
 
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -40,6 +45,13 @@ fun UploadScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.addByFile(it, onNavigateBack) }
+    }
 
     LaunchedEffect(uiState.resultMessage) {
         if (uiState.resultMessage == "添加成功") {
@@ -74,6 +86,25 @@ fun UploadScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { viewModel.readClipboard(context) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("从剪贴板添加")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = { filePickerLauncher.launch(arrayOf("application/x-bittorrent")) },
+                enabled = !uiState.isSubmitting,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("选择种子文件")
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
