@@ -54,8 +54,7 @@ import com.jbcbros.qbitremote.data.model.Torrent
 import com.jbcbros.qbitremote.util.formatBytes
 import com.jbcbros.qbitremote.util.formatSpeed
 
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToUpload: () -> Unit,
@@ -204,6 +203,7 @@ private fun FilterRow(currentFilter: FilterType, onFilterSelected: (FilterType) 
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TorrentItem(torrent: Torrent, onClick: () -> Unit, onLongClick: () -> Unit) {
     val stateLabel = mapOf(
