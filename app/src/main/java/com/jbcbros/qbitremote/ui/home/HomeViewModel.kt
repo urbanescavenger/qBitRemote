@@ -30,7 +30,8 @@ data class HomeUiState(
     val isRefreshing: Boolean = false,
     val filter: FilterType = FilterType.All,
     val hasConfig: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val searchQuery: String = ""
 )
 
 @HiltViewModel
@@ -42,6 +43,7 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     private var pollJob: Job? = null
+    private var allTorrents: List<Torrent> = emptyList()
 
     init {
         viewModelScope.launch {
@@ -77,9 +79,10 @@ class HomeViewModel @Inject constructor(
 
             repository.loadConfig()
             val transferInfo = repository.getTransferInfo() ?: TransferInfo()
-            val torrents = repository.getTorrents(filter = _uiState.value.filter.value)
+            allTorrents = repository.getTorrents(filter = _uiState.value.filter.value)
+            val filtered = applySearch(allTorrents, _uiState.value.searchQuery)
             _uiState.value = _uiState.value.copy(
-                torrents = torrents,
+                torrents = filtered,
                 transferInfo = transferInfo,
                 isRefreshing = false,
                 hasConfig = true
@@ -90,6 +93,19 @@ class HomeViewModel @Inject constructor(
     fun setFilter(filter: FilterType) {
         _uiState.value = _uiState.value.copy(filter = filter)
         refresh()
+    }
+
+    fun setSearchQuery(query: String) {
+        _uiState.value = _uiState.value.copy(
+            searchQuery = query,
+            torrents = applySearch(allTorrents, query)
+        )
+    }
+
+    private fun applySearch(torrents: List<Torrent>, query: String): List<Torrent> {
+        if (query.isBlank()) return torrents
+        val lowerQuery = query.lowercase()
+        return torrents.filter { it.name.lowercase().contains(lowerQuery) }
     }
 
     override fun onCleared() {

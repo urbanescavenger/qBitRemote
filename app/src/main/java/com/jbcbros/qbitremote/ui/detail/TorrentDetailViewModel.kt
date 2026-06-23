@@ -1,14 +1,16 @@
 package com.jbcbros.qbitremote.ui.detail
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jbcbros.qbitremote.data.model.Torrent
 import com.jbcbros.qbitremote.data.repository.QbRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,6 +28,8 @@ class TorrentDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
+    private var pollJob: Job? = null
+
     fun loadTorrent(hash: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
@@ -33,6 +37,21 @@ class TorrentDetailViewModel @Inject constructor(
             val torrent = torrents.find { it.hash == hash }
             _uiState.value = _uiState.value.copy(torrent = torrent, isLoading = false)
         }
+    }
+
+    fun startPolling(hash: String) {
+        pollJob?.cancel()
+        pollJob = viewModelScope.launch {
+            while (isActive) {
+                loadTorrent(hash)
+                delay(3000)
+            }
+        }
+    }
+
+    fun stopPolling() {
+        pollJob?.cancel()
+        pollJob = null
     }
 
     fun pauseTorrent(hash: String) {
@@ -69,5 +88,10 @@ class TorrentDetailViewModel @Inject constructor(
 
     fun clearMessage() {
         _uiState.value = _uiState.value.copy(actionMessage = null)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopPolling()
     }
 }

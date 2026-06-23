@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -42,6 +43,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jbcbros.qbitremote.data.model.Torrent
 import com.jbcbros.qbitremote.util.formatBytes
 import com.jbcbros.qbitremote.util.formatSpeed
+
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,6 +86,16 @@ fun HomeScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
+            OutlinedTextField(
+                value = uiState.searchQuery,
+                onValueChange = viewModel::setSearchQuery,
+                placeholder = { Text("搜索种子") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "搜索") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                singleLine = true
+            )
             FilterRow(uiState.filter, viewModel::setFilter)
 
             if (!uiState.hasConfig) {
