@@ -17,6 +17,18 @@ android {
         versionName = "1.0.0"
     }
 
+    signingConfigs {
+        create("release") {
+            val keystorePath = project.properties["key.store"]?.toString()
+            if (!keystorePath.isNullOrBlank()) {
+                storeFile = file(keystorePath)
+                keyAlias = project.properties["key.alias"]?.toString() ?: ""
+                storePassword = project.properties["key.store.password"]?.toString() ?: ""
+                keyPassword = project.properties["key.key.password"]?.toString() ?: ""
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -24,6 +36,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 
