@@ -1,5 +1,7 @@
 package com.jbcbros.qbitremote.ui.home
 
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +48,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,7 +62,6 @@ import com.jbcbros.qbitremote.data.model.Torrent
 import com.jbcbros.qbitremote.util.formatBytes
 import com.jbcbros.qbitremote.util.formatSpeed
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onNavigateToUpload: () -> Unit,
@@ -73,14 +73,11 @@ fun HomeScreen(
     var selectedTorrent by remember { mutableStateOf<Torrent?>(null) }
     val sheetState = rememberModalBottomSheetState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-
-    LaunchedEffect(uiState.snackbarMessage) {
-        if (uiState.snackbarMessage != null) {
-            scope.launch {
-                snackbarHostState.showSnackbar(uiState.snackbarMessage)
-                viewModel.clearSnackbar()
-            }
+    val snackbarMessage = uiState.snackbarMessage
+    LaunchedEffect(snackbarMessage) {
+        if (snackbarMessage != null) {
+            snackbarHostState.showSnackbar(snackbarMessage)
+            viewModel.clearSnackbar()
         }
     }
 
@@ -268,7 +265,6 @@ private fun FilterRow(currentFilter: FilterType, onFilterSelected: (FilterType) 
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TorrentItem(torrent: Torrent, onClick: () -> Unit, onLongClick: () -> Unit) {
     val stateLabel = mapOf(
