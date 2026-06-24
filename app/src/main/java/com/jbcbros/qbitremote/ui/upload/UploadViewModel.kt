@@ -20,6 +20,8 @@ data class UploadUiState(
     val magnetUrl: String = "",
     val selectedCategory: String = "uncategorized",
     val categories: List<String> = listOf("uncategorized"),
+    val availableTags: List<String> = emptyList(),
+    val selectedTags: Set<String> = emptySet(),
     val isSubmitting: Boolean = false,
     val resultMessage: String? = null,
     val addSuccess: Boolean = false
@@ -36,6 +38,7 @@ class UploadViewModel @Inject constructor(
 
     init {
         loadCategories()
+        loadTags()
     }
 
     fun loadCategories() {
@@ -45,6 +48,23 @@ class UploadViewModel @Inject constructor(
                 categories = listOf("uncategorized") + cats
             )
         }
+    }
+
+    fun loadTags() {
+        viewModelScope.launch {
+            val tags = repository.getTags()
+            _uiState.value = _uiState.value.copy(availableTags = tags)
+        }
+    }
+
+    fun toggleTag(tag: String) {
+        _uiState.value = _uiState.value.copy(
+            selectedTags = if (tag in _uiState.value.selectedTags) {
+                _uiState.value.selectedTags - tag
+            } else {
+                _uiState.value.selectedTags + tag
+            }
+        )
     }
 
     fun readClipboard(context: Context): String {
@@ -74,7 +94,8 @@ class UploadViewModel @Inject constructor(
                 return@launch
             }
             val category = if (_uiState.value.selectedCategory == "uncategorized") null else _uiState.value.selectedCategory
-            val success = repository.addTorrentByUrl(trimmed, category)
+            val tags = _uiState.value.selectedTags.joinToString(",").ifBlank { null }
+            val success = repository.addTorrentByUrl(trimmed, category, tags)
             _uiState.value = _uiState.value.copy(
                 isSubmitting = false,
                 resultMessage = context.getString(
@@ -90,7 +111,8 @@ class UploadViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSubmitting = true, resultMessage = null)
             val category = if (_uiState.value.selectedCategory == "uncategorized") null else _uiState.value.selectedCategory
-            val success = repository.addTorrentFile(uri, category)
+            val tags = _uiState.value.selectedTags.joinToString(",").ifBlank { null }
+            val success = repository.addTorrentFile(uri, category, tags)
             _uiState.value = _uiState.value.copy(
                 isSubmitting = false,
                 resultMessage = context.getString(

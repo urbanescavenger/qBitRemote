@@ -140,7 +140,8 @@ fun TorrentDetailScreen(
                 stringResource(R.string.label_state) to (torrent?.state ?: "-"),
                 stringResource(R.string.label_size) to (torrent?.total_size?.let { "${formatBytes(it)}" } ?: "-"),
                 stringResource(R.string.label_seeders) to (torrent?.num_complete?.toString() ?: "-"),
-                stringResource(R.string.label_category) to (torrent?.category ?: "-")
+                stringResource(R.string.label_category) to (torrent?.category ?: "-"),
+                stringResource(R.string.label_tags) to (torrent?.tags?.joinToString(", ")?.ifBlank { "-" } ?: "-")
             )
 
             Spacer(modifier = Modifier.height(16.dp))

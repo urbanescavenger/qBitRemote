@@ -3,7 +3,10 @@ package com.jbcbros.qbitremote.ui.upload
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +20,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -39,7 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jbcbros.qbitremote.R
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun UploadScreen(
     onNavigateBack: () -> Unit,
@@ -135,6 +139,24 @@ fun UploadScreen(
                                 viewModel.setCategory(category)
                                 expanded = false
                             }
+                        )
+                    }
+                }
+            }
+
+            if (uiState.availableTags.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(stringResource(R.string.label_tags))
+                Spacer(modifier = Modifier.height(8.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    uiState.availableTags.forEach { tag ->
+                        FilterChip(
+                            selected = tag in uiState.selectedTags,
+                            onClick = { viewModel.toggleTag(tag) },
+                            label = { Text(tag) }
                         )
                     }
                 }

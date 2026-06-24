@@ -187,10 +187,22 @@ class QbRepository @Inject constructor(
         }
     }
 
-    suspend fun addTorrentByUrl(urls: String, category: String? = null): Boolean {
+    suspend fun getTags(): List<String> {
+        val service = apiService ?: return emptyList()
+        return try {
+            val res = service.getTags()
+            val body = res.body()?.string() ?: return emptyList()
+            val arr = com.google.gson.Gson().fromJson(body, Array<String>::class.java)
+            arr?.toList() ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun addTorrentByUrl(urls: String, category: String? = null, tags: String? = null): Boolean {
         val service = apiService ?: return false
         return try {
-            val res = service.addTorrentByUrl(urls, category)
+            val res = service.addTorrentByUrl(urls, category, tags)
             val body = res.body()?.string()?.lowercase()?.trim() ?: ""
             res.isSuccessful && !body.contains("fail")
         } catch (e: Exception) {
@@ -198,7 +210,7 @@ class QbRepository @Inject constructor(
         }
     }
 
-    suspend fun addTorrentFile(uri: Uri, category: String? = null): Boolean {
+    suspend fun addTorrentFile(uri: Uri, category: String? = null, tags: String? = null): Boolean {
         val service = apiService ?: return false
         return try {
             context.contentResolver.openInputStream(uri)?.use { stream ->
@@ -209,7 +221,10 @@ class QbRepository @Inject constructor(
                 val categoryBody = category?.let {
                     it.toRequestBody("text/plain".toMediaTypeOrNull())
                 }
-                val res = service.addTorrentFile(part, categoryBody)
+                val tagsBody = tags?.takeIf { it.isNotBlank() }?.let {
+                    it.toRequestBody("text/plain".toMediaTypeOrNull())
+                }
+                val res = service.addTorrentFile(part, categoryBody, tagsBody)
                 val body = res.body()?.string()?.lowercase()?.trim() ?: ""
                 return res.isSuccessful && !body.contains("fail")
             } ?: return false

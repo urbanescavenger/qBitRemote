@@ -84,6 +84,7 @@
     <string name="action_add_from_clipboard">从剪贴板添加</string>
     <string name="action_select_torrent_file">选择种子文件</string>
     <string name="label_category_select">分类</string>
+    <string name="label_tags">标签</string>
     <string name="category_uncategorized">未分类</string>
     <string name="action_add">添加</string>
     <string name="msg_adding">添加中…</string>

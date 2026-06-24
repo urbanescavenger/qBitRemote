@@ -11,3 +11,6 @@
 local.properties
 *.apk
 *.aab
+
+# Claude Code local working files
+.claude/

@@ -37,18 +37,23 @@ interface QbApiService {
     @GET("/api/v2/torrents/categories")
     suspend fun getCategories(): Response<ResponseBody>
 
+    @GET("/api/v2/torrents/tags")
+    suspend fun getTags(): Response<ResponseBody>
+
     @FormUrlEncoded
     @POST("/api/v2/torrents/add")
     suspend fun addTorrentByUrl(
         @Field("urls") urls: String,
-        @Field("category") category: String? = null
+        @Field("category") category: String? = null,
+        @Field("tags") tags: String? = null
     ): Response<ResponseBody>
 
     @Multipart
     @POST("/api/v2/torrents/add")
     suspend fun addTorrentFile(
         @Part torrents: MultipartBody.Part,
-        @Part("category") category: RequestBody? = null
+        @Part("category") category: RequestBody? = null,
+        @Part("tags") tags: RequestBody? = null
     ): Response<ResponseBody>
 
     @FormUrlEncoded

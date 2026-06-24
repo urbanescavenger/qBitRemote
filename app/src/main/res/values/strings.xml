@@ -84,6 +84,7 @@
     <string name="action_add_from_clipboard">Add from clipboard</string>
     <string name="action_select_torrent_file">Select .torrent file</string>
     <string name="label_category_select">Category</string>
+    <string name="label_tags">Tags</string>
     <string name="category_uncategorized">Uncategorized</string>
     <string name="action_add">Add</string>
     <string name="msg_adding">Adding…</string>

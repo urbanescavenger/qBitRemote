@@ -13,6 +13,7 @@ data class Torrent(
     val uploaded: Long,
     val ratio: Float,
     val category: String = "",
+    val tags: List<String> = emptyList(),
     val num_complete: Int = 0,
     val trackers_count: Int = 0,
     val tracker: String = "",
