@@ -180,17 +180,18 @@ fun HomeScreen(
             FilterRow(uiState.filter, viewModel::setFilter)
             CategoryRow(uiState.categories, uiState.selectedCategory, viewModel::setCategory)
 
+            val error = uiState.error
             if (!uiState.hasConfig) {
                 EmptyState(
                     icon = Icons.Default.CloudOff,
                     title = stringResource(R.string.state_no_config_title),
                     subtitle = stringResource(R.string.hint_configure_server)
                 )
-            } else if (uiState.error != null) {
+            } else if (error != null) {
                 EmptyState(
                     icon = Icons.Default.WifiOff,
                     title = stringResource(R.string.state_connection_error_title),
-                    subtitle = uiState.error,
+                    subtitle = error,
                     actionText = stringResource(R.string.action_retry),
                     onAction = { viewModel.refresh() }
                 )

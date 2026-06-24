@@ -5,6 +5,21 @@ plugins {
     id("org.jetbrains.kotlin.kapt")
 }
 
+// Versioning driven by git: versionCode = commit count, versionName = latest tag.
+fun gitCommitCount(): Int = try {
+    val process = Runtime.getRuntime().exec(arrayOf("git", "rev-list", "--count", "HEAD"), null, rootDir)
+    process.inputStream.bufferedReader().readText().trim().ifEmpty { "1" }.toInt()
+} catch (e: Exception) {
+    1
+}
+
+fun gitVersionName(): String = try {
+    val process = Runtime.getRuntime().exec(arrayOf("git", "describe", "--tags", "--abbrev=0"), null, rootDir)
+    process.inputStream.bufferedReader().readText().trim().removePrefix("v").ifEmpty { "1.0.0" }
+} catch (e: Exception) {
+    "1.0.0"
+}
+
 android {
     namespace = "com.jbcbros.qbitremote"
     compileSdk = 34
@@ -13,8 +28,8 @@ android {
         applicationId = "com.jbcbros.qbitremote"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = gitCommitCount()
+        versionName = gitVersionName()
     }
 
     signingConfigs {
