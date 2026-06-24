@@ -1,6 +1,6 @@
-package com.jbcbros.qbitremote.ui.home
-
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+
+package com.jbcbros.qbitremote.ui.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
