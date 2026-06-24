@@ -10,6 +10,10 @@
     <string name="hint_search_torrents">Search torrents</string>
     <string name="hint_configure_server">Configure a server first (Settings).</string>
     <string name="hint_empty_torrents">No torrents</string>
+    <string name="state_no_config_title">No server configured</string>
+    <string name="state_connection_error_title">Connection error</string>
+    <string name="state_empty_subtitle">Torrents you add will appear here.</string>
+    <string name="action_retry">Retry</string>
     <string name="filter_all">All</string>
     <string name="filter_downloading">Downloading</string>
     <string name="filter_completed">Completed</string>

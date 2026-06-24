@@ -72,12 +72,10 @@ class HomeViewModel @Inject constructor(
                 startPolling()
             }
         }
-        // Surface connection errors (unreachable server / failed auth) as a Snackbar.
+        // Surface connection errors (unreachable server / failed auth) as a state the UI renders.
         viewModelScope.launch {
             repository.connectionError.collect { error ->
-                if (error != null) {
-                    _uiState.value = _uiState.value.copy(snackbarMessage = error)
-                }
+                _uiState.value = _uiState.value.copy(error = error)
             }
         }
     }

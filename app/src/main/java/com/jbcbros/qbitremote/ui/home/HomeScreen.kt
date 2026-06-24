@@ -14,16 +14,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -58,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -95,24 +101,24 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(stringResource(R.string.title_remote), color = Color.White)
+                        Text(stringResource(R.string.title_remote), color = MaterialTheme.colorScheme.onPrimary)
                         Text(
                             text = "↑${formatSpeed(uiState.transferInfo.up_info_speed)}  ↓${formatSpeed(uiState.transferInfo.dl_info_speed)}",
-                            color = Color(0xFFdbeafe),
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
                             fontSize = 12.sp
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF2f6fed),
-                    titleContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 actions = {
                     IconButton(onClick = onNavigateToUpload) {
-                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_add), tint = Color.White)
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_add), tint = MaterialTheme.colorScheme.onPrimary)
                     }
                     IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.action_sort), tint = Color.White)
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.action_sort), tint = MaterialTheme.colorScheme.onPrimary)
                     }
                     DropdownMenu(
                         expanded = showMenu,
@@ -175,13 +181,25 @@ fun HomeScreen(
             CategoryRow(uiState.categories, uiState.selectedCategory, viewModel::setCategory)
 
             if (!uiState.hasConfig) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.hint_configure_server), textAlign = TextAlign.Center)
-                }
+                EmptyState(
+                    icon = Icons.Default.CloudOff,
+                    title = stringResource(R.string.state_no_config_title),
+                    subtitle = stringResource(R.string.hint_configure_server)
+                )
+            } else if (uiState.error != null) {
+                EmptyState(
+                    icon = Icons.Default.WifiOff,
+                    title = stringResource(R.string.state_connection_error_title),
+                    subtitle = uiState.error,
+                    actionText = stringResource(R.string.action_retry),
+                    onAction = { viewModel.refresh() }
+                )
             } else if (uiState.torrents.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.hint_empty_torrents), textAlign = TextAlign.Center)
-                }
+                EmptyState(
+                    icon = Icons.Default.Inbox,
+                    title = stringResource(R.string.hint_empty_torrents),
+                    subtitle = stringResource(R.string.state_empty_subtitle)
+                )
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -375,6 +393,42 @@ private fun TorrentItem(torrent: Torrent, onClick: () -> Unit, onLongClick: () -
         }
         Spacer(modifier = Modifier.height(4.dp))
         Spacer(modifier = Modifier.height(1.dp).fillMaxWidth())
+    }
+}
+
+@Composable
+private fun EmptyState(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    actionText: String? = null,
+    onAction: (() -> Unit)? = null
+) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                tint = MaterialTheme.colorScheme.outline
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                subtitle,
+                color = MaterialTheme.colorScheme.outline,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            if (actionText != null && onAction != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                TextButton(onClick = onAction) { Text(actionText) }
+            }
+        }
     }
 }
 
