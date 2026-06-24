@@ -179,4 +179,18 @@
 ### 7.2 下一步建议
 进入 **Phase 4（P3）发布加固**：R8/ProGuard 规则、版本号自动化（已完成）、单元测试、CI lint+test。Phase 3 的国际化、空错状态、Edge-to-Edge、Timber 均已完成；3.3 Pull-to-Refresh 已删除（自动轮询已覆盖，不值得为它升级 Compose BOM）。
 
+---
+
+## 8. Phase 4（P3）进度（2026/06/24）
+
+| 任务 | 状态 | 说明 |
+|------|------|------|
+| 4.1 R8/ProGuard | ⏳ 待定 | 开 `isMinifyEnabled` + keep 规则（Retrofit/Gson/Hilt/Compose/model）。**风险高**：keep 规则写错会导致 release 运行时崩溃（Gson 反射/Hilt 注入），CI 编译验不了，需真机测 minified release。建议先验证 4.4 测试覆盖再开。 |
+| 4.2 版本号自动化 | ✅ | `versionCode` = git 提交数，`versionName` = 最新 tag（去 `v` 前缀）。设置页底部展示。 |
+| 4.3 CI lint+test | ✅ 部分 | CI 已加 `:app:testDebugUnitTest`；lint 暂未加（避免预存 lint error 噪音，后续按需开）。 |
+| 4.4 单元测试 | ✅ | `TorrentParsingTest`（钉死 `tags` 为逗号字符串、缺字段走默认值，守住 v1.6.0 那类回归）、`FormatUtilsTest`。CI 中跑通。 |
+| 4.5 集成/UI 测试 | ⏳ | 需 CI 加 emulator（较重），暂缓。 |
+| 4.6 签名/发布流程文档 | ✅ | 见 README「CI 与发布」一节（keystore secret、tag 发版）。 |
+
+
 
