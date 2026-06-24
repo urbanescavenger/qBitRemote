@@ -101,6 +101,10 @@
 
     <!-- Settings Screen -->
     <string name="title_settings">设置</string>
+    <string name="label_servers">服务器</string>
+    <string name="action_add_server">添加服务器</string>
+    <string name="label_active">当前</string>
+    <string name="action_set_active">设为当前</string>
     <string name="label_nickname">昵称</string>
     <string name="hint_nickname">服务器名</string>
     <string name="label_host">地址</string>

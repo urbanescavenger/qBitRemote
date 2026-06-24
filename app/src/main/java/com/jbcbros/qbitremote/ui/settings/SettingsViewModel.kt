@@ -9,11 +9,16 @@ import com.jbcbros.qbitremote.data.repository.QbRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class ServerItem(val config: ServerConfig, val isActive: Boolean)
 
 data class SettingsUiState(
     val editingId: String = "",
@@ -37,6 +42,12 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
+    /** All configured servers, flagged with whether each is the active one. */
+    val servers: StateFlow<List<ServerItem>> =
+        combine(repository.servers, repository.serverConfig) { list, active ->
+            list.map { ServerItem(it, it.id == active.id) }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     init {
         viewModelScope.launch {
             val config = runCatching { repository.loadConfig() }.getOrDefault(ServerConfig())
@@ -58,6 +69,32 @@ class SettingsViewModel @Inject constructor(
     fun updateUsername(value: String) { _uiState.value = _uiState.value.copy(username = value) }
     fun updatePassword(value: String) { _uiState.value = _uiState.value.copy(password = value) }
     fun updateSsl(value: Boolean) { _uiState.value = _uiState.value.copy(ssl = value) }
+
+    /** Start editing a brand-new (blank) server. */
+    fun newServer() {
+        _uiState.value = SettingsUiState()
+    }
+
+    /** Load an existing server into the form for editing. */
+    fun editServer(server: ServerConfig) {
+        _uiState.value = SettingsUiState(
+            editingId = server.id,
+            nickname = server.nickname,
+            host = server.host,
+            port = server.port,
+            username = server.username,
+            password = server.password,
+            ssl = server.ssl
+        )
+    }
+
+    fun deleteServer(id: String) {
+        viewModelScope.launch { repository.deleteServer(id) }
+    }
+
+    fun setActive(id: String) {
+        viewModelScope.launch { repository.setActiveServer(id) }
+    }
 
     fun testAndSave(onSaved: () -> Unit) {
         viewModelScope.launch {
