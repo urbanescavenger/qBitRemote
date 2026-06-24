@@ -15,6 +15,8 @@ import com.jbcbros.qbitremote.data.api.QbCookieJar
 import com.jbcbros.qbitremote.data.model.LoginResult
 import com.jbcbros.qbitremote.data.model.ServerConfig
 import com.jbcbros.qbitremote.data.model.Torrent
+import com.jbcbros.qbitremote.data.model.TorrentFile
+import com.jbcbros.qbitremote.data.model.Tracker
 import com.jbcbros.qbitremote.data.model.TransferInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -193,6 +195,30 @@ class QbRepository @Inject constructor(
             val res = service.getTags()
             val body = res.body()?.string() ?: return emptyList()
             val arr = com.google.gson.Gson().fromJson(body, Array<String>::class.java)
+            arr?.toList() ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getTorrentFiles(hash: String): List<TorrentFile> {
+        val service = apiService ?: return emptyList()
+        return try {
+            val res = service.getTorrentFiles(hash)
+            val body = res.body()?.string() ?: return emptyList()
+            val arr = com.google.gson.Gson().fromJson(body, Array<TorrentFile>::class.java)
+            arr?.toList() ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun getTorrentTrackers(hash: String): List<Tracker> {
+        val service = apiService ?: return emptyList()
+        return try {
+            val res = service.getTorrentTrackers(hash)
+            val body = res.body()?.string() ?: return emptyList()
+            val arr = com.google.gson.Gson().fromJson(body, Array<Tracker>::class.java)
             arr?.toList() ?: emptyList()
         } catch (e: Exception) {
             emptyList()

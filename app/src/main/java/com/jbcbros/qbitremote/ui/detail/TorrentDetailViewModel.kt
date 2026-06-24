@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jbcbros.qbitremote.R
 import com.jbcbros.qbitremote.data.model.Torrent
+import com.jbcbros.qbitremote.data.model.TorrentFile
+import com.jbcbros.qbitremote.data.model.Tracker
 import com.jbcbros.qbitremote.data.repository.QbRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,7 +24,9 @@ data class DetailUiState(
     val isLoading: Boolean = false,
     val actionMessage: String? = null,
     val actionSuccess: Boolean = false,
-    val connectionError: String? = null
+    val connectionError: String? = null,
+    val files: List<TorrentFile> = emptyList(),
+    val trackers: List<Tracker> = emptyList()
 )
 
 @HiltViewModel
@@ -52,6 +56,19 @@ class TorrentDetailViewModel @Inject constructor(
             val torrents = repository.getTorrents()
             val torrent = torrents.find { it.hash == hash }
             _uiState.value = _uiState.value.copy(torrent = torrent, isLoading = false)
+        }
+    }
+
+    /** Files/trackers are heavier and rarely change; load once on entry, not every poll. */
+    fun loadFiles(hash: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(files = repository.getTorrentFiles(hash))
+        }
+    }
+
+    fun loadTrackers(hash: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(trackers = repository.getTorrentTrackers(hash))
         }
     }
 

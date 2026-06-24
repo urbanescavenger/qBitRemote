@@ -74,6 +74,14 @@
     <string name="label_ratio">比率</string>
     <string name="label_seeding_time">做种时间</string>
     <string name="label_path">路径</string>
+    <string name="label_speed_limit">限速</string>
+    <string name="label_dl_limit">下载限速</string>
+    <string name="label_up_limit">上传限速</string>
+    <string name="label_unlimited">不限</string>
+    <string name="label_files">文件</string>
+    <string name="label_trackers">Tracker</string>
+    <string name="label_peers">节点</string>
+    <string name="msg_more_files">还有 %1$d 个文件</string>
     <string name="dialog_delete_torrent_title">删除种子?</string>
     <string name="action_cancel">取消</string>
     <string name="label_delete_files">同时删除本地文件</string>

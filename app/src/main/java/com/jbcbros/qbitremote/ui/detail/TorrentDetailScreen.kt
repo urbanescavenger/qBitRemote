@@ -1,11 +1,13 @@
 package com.jbcbros.qbitremote.ui.detail
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -17,6 +19,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -58,9 +61,12 @@ fun TorrentDetailScreen(
     var deleteFiles by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val unlimited = stringResource(R.string.label_unlimited)
 
     LaunchedEffect(hash) {
         viewModel.loadTorrent(hash)
+        viewModel.loadFiles(hash)
+        viewModel.loadTrackers(hash)
     }
 
     DisposableEffect(hash) {
@@ -168,6 +174,54 @@ fun TorrentDetailScreen(
             Spacer(modifier = Modifier.height(16.dp))
             SectionTitle(stringResource(R.string.label_storage))
             InfoCard(stringResource(R.string.label_path) to (torrent?.save_path ?: "-"))
+
+            Spacer(modifier = Modifier.height(16.dp))
+            SectionTitle(stringResource(R.string.label_speed_limit))
+            InfoCard(
+                stringResource(R.string.label_dl_limit) to (torrent?.let { if (it.dl_limit > 0) formatSpeed(it.dl_limit) else unlimited } ?: unlimited),
+                stringResource(R.string.label_up_limit) to (torrent?.let { if (it.up_limit > 0) formatSpeed(it.up_limit) else unlimited } ?: unlimited)
+            )
+
+            if (uiState.files.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                SectionTitle(stringResource(R.string.label_files))
+                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        val shown = uiState.files.take(100)
+                        shown.forEach { file ->
+                            Text(text = file.name, maxLines = 1, fontSize = 14.sp)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                LinearProgressIndicator(
+                                    progress = { file.progress },
+                                    modifier = Modifier.weight(1f).height(3.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = formatBytes(file.size), fontSize = 12.sp, color = Color.Gray)
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        val rest = uiState.files.size - shown.size
+                        if (rest > 0) {
+                            Text(text = stringResource(R.string.msg_more_files, rest), fontSize = 12.sp, color = Color.Gray)
+                        }
+                    }
+                }
+            }
+
+            if (uiState.trackers.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                SectionTitle(stringResource(R.string.label_trackers))
+                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        uiState.trackers.forEach { tracker ->
+                            Text(text = tracker.url, maxLines = 1, fontSize = 14.sp)
+                            Text(text = "${stringResource(R.string.label_peers)}: ${tracker.num_peers}", fontSize = 12.sp, color = Color.Gray)
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
         }

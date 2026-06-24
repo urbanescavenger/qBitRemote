@@ -74,6 +74,14 @@
     <string name="label_ratio">Ratio</string>
     <string name="label_seeding_time">Seeding time</string>
     <string name="label_path">Path</string>
+    <string name="label_speed_limit">Speed limit</string>
+    <string name="label_dl_limit">Download limit</string>
+    <string name="label_up_limit">Upload limit</string>
+    <string name="label_unlimited">Unlimited</string>
+    <string name="label_files">Files</string>
+    <string name="label_trackers">Trackers</string>
+    <string name="label_peers">Peers</string>
+    <string name="msg_more_files">+%1$d more files</string>
     <string name="dialog_delete_torrent_title">Delete torrent?</string>
     <string name="action_cancel">Cancel</string>
     <string name="label_delete_files">Also delete local files</string>

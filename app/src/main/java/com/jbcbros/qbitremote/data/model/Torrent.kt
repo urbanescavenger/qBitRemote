@@ -9,6 +9,8 @@ data class Torrent(
     val total_size: Long,
     val dlspeed: Long,
     val upspeed: Long,
+    val dl_limit: Long = 0L,
+    val up_limit: Long = 0L,
     val downloaded: Long,
     val uploaded: Long,
     val ratio: Float,

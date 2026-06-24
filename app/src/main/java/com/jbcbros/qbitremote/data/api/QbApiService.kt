@@ -40,6 +40,12 @@ interface QbApiService {
     @GET("/api/v2/torrents/tags")
     suspend fun getTags(): Response<ResponseBody>
 
+    @GET("/api/v2/torrents/files")
+    suspend fun getTorrentFiles(@Query("hash") hash: String): Response<ResponseBody>
+
+    @GET("/api/v2/torrents/trackers")
+    suspend fun getTorrentTrackers(@Query("hash") hash: String): Response<ResponseBody>
+
     @FormUrlEncoded
     @POST("/api/v2/torrents/add")
     suspend fun addTorrentByUrl(
