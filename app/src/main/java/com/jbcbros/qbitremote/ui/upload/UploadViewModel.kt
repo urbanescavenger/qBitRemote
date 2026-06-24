@@ -98,12 +98,11 @@ class UploadViewModel @Inject constructor(
             val success = repository.addTorrentByUrl(trimmed, category, tags)
             _uiState.value = _uiState.value.copy(
                 isSubmitting = false,
-                resultMessage = context.getString(
-                    if (success) R.string.msg_add_success else R.string.msg_add_failed
-                ),
+                resultMessage = if (success) context.getString(R.string.msg_add_success)
+                    else context.getString(R.string.msg_add_failed) +
+                        (repository.connectionError.value?.let { ": $it" } ?: ""),
                 addSuccess = success
             )
-            if (success) onSuccess()
         }
     }
 
@@ -115,12 +114,11 @@ class UploadViewModel @Inject constructor(
             val success = repository.addTorrentFile(uri, category, tags)
             _uiState.value = _uiState.value.copy(
                 isSubmitting = false,
-                resultMessage = context.getString(
-                    if (success) R.string.msg_add_success else R.string.msg_add_failed
-                ),
+                resultMessage = if (success) context.getString(R.string.msg_add_success)
+                    else context.getString(R.string.msg_add_failed) +
+                        (repository.connectionError.value?.let { ": $it" } ?: ""),
                 addSuccess = success
             )
-            if (success) onSuccess()
         }
     }
 

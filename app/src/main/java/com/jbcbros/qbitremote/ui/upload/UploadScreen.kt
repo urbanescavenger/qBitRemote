@@ -42,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jbcbros.qbitremote.R
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -61,6 +62,8 @@ fun UploadScreen(
 
     LaunchedEffect(uiState.addSuccess) {
         if (uiState.addSuccess) {
+            // Show the success message briefly before navigating back.
+            delay(1000)
             onNavigateBack()
         }
     }
@@ -172,9 +175,12 @@ fun UploadScreen(
                 Text(if (uiState.isSubmitting) stringResource(R.string.msg_adding) else stringResource(R.string.action_add))
             }
 
-            if (uiState.resultMessage != null && !uiState.addSuccess) {
+            if (uiState.resultMessage != null) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = uiState.resultMessage ?: "", color = Color.Red)
+                Text(
+                    text = uiState.resultMessage ?: "",
+                    color = if (uiState.addSuccess) Color(0xFF1E6738) else Color.Red
+                )
             }
         }
     }

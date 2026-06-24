@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jbcbros.qbitremote.BuildConfig
 import com.jbcbros.qbitremote.R
 import com.jbcbros.qbitremote.data.model.ServerConfig
 
@@ -193,6 +194,11 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
                 Icon(Icons.Default.Settings, contentDescription = null)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("qBitRemote", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = "v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }
