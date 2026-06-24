@@ -80,8 +80,9 @@ fun TorrentDetailScreen(
     }
 
     LaunchedEffect(uiState.connectionError) {
-        if (uiState.connectionError != null) {
-            snackbarHostState.showSnackbar(uiState.connectionError)
+        val error = uiState.connectionError
+        if (error != null) {
+            snackbarHostState.showSnackbar(error)
             viewModel.clearConnectionError()
         }
     }
