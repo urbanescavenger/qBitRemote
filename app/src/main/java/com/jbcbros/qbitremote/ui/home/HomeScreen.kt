@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -39,6 +40,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -70,6 +72,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showBottomSheet by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedTorrent by remember { mutableStateOf<Torrent?>(null) }
     val sheetState = rememberModalBottomSheetState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -188,14 +191,35 @@ fun HomeScreen(
                     leadingContent = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.action_delete), tint = Color.Red) },
                     modifier = Modifier.combinedClickable(
                         onClick = {
-                            viewModel.deleteTorrent(selectedTorrent!!.hash)
                             showBottomSheet = false
+                            showDeleteDialog = true
                         }
                     )
                 )
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
+    }
+
+    if (showDeleteDialog && selectedTorrent != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(stringResource(R.string.dialog_delete_torrent_title)) },
+            text = { Text(selectedTorrent!!.name, maxLines = 2) },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteTorrent(selectedTorrent!!.hash)
+                    showDeleteDialog = false
+                }) {
+                    Text(stringResource(R.string.action_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            }
+        )
     }
 }
 
@@ -206,17 +230,18 @@ private fun CategoryRow(
     onCategorySelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val allCategories = listOf("" to "全部") + categories.map { it to it }
+    val allLabel = stringResource(R.string.filter_all)
+    val allCategories = listOf("" to allLabel) + categories.map { it to it }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded }
     ) {
         OutlinedTextField(
-            value = if (selectedCategory.isBlank()) "全部" else selectedCategory,
+            value = if (selectedCategory.isBlank()) allLabel else selectedCategory,
             onValueChange = {},
             readOnly = true,
-            label = { Text("分类") },
+            label = { Text(stringResource(R.string.label_category)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -267,27 +292,7 @@ private fun FilterRow(currentFilter: FilterType, onFilterSelected: (FilterType) 
 
 @Composable
 private fun TorrentItem(torrent: Torrent, onClick: () -> Unit, onLongClick: () -> Unit) {
-    val stateLabel = mapOf(
-        "error" to "出错",
-        "missingFiles" to "缺失文件",
-        "uploading" to "做种",
-        "pausedUP" to "已暂停",
-        "queuedUP" to "排队做种",
-        "stalledUP" to "做种",
-        "checkingUP" to "校验中",
-        "forcedUP" to "强制做种",
-        "allocating" to "分配空间",
-        "downloading" to "下载中",
-        "metaDL" to "下载元数据",
-        "pausedDL" to "已暂停",
-        "queuedDL" to "排队下载",
-        "stalledDL" to "下载中",
-        "checkingDL" to "校验中",
-        "forcedDL" to "强制下载",
-        "checkingResumeData" to "校验中",
-        "moving" to "移动文件",
-        "unknown" to "未知"
-    )
+    val stateLabel = rememberStateLabels()
 
     Column(
         modifier = Modifier
@@ -322,3 +327,26 @@ private fun TorrentItem(torrent: Torrent, onClick: () -> Unit, onLongClick: () -
         Spacer(modifier = Modifier.height(1.dp).fillMaxWidth())
     }
 }
+
+@Composable
+private fun rememberStateLabels(): Map<String, String> = mapOf(
+    "error" to stringResource(R.string.state_error),
+    "missingFiles" to stringResource(R.string.state_missing_files),
+    "uploading" to stringResource(R.string.state_uploading),
+    "pausedUP" to stringResource(R.string.state_paused_up),
+    "queuedUP" to stringResource(R.string.state_queued_up),
+    "stalledUP" to stringResource(R.string.state_stalled_up),
+    "checkingUP" to stringResource(R.string.state_checking_up),
+    "forcedUP" to stringResource(R.string.state_forced_up),
+    "allocating" to stringResource(R.string.state_allocating),
+    "downloading" to stringResource(R.string.state_downloading),
+    "metaDL" to stringResource(R.string.state_meta_dl),
+    "pausedDL" to stringResource(R.string.state_paused_dl),
+    "queuedDL" to stringResource(R.string.state_queued_dl),
+    "stalledDL" to stringResource(R.string.state_stalled_dl),
+    "checkingDL" to stringResource(R.string.state_checking_dl),
+    "forcedDL" to stringResource(R.string.state_forced_dl),
+    "checkingResumeData" to stringResource(R.string.state_checking_resume_data),
+    "moving" to stringResource(R.string.state_moving),
+    "unknown" to stringResource(R.string.state_unknown)
+)

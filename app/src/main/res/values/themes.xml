@@ -1,4 +1,11 @@
 <resources>
     <style name="Theme.QBitRemote" parent="android:Theme.Material.Light.NoActionBar">
     </style>
+
+    <!-- SplashScreen API: shown while the process starts, then hands off to Theme.QBitRemote. -->
+    <style name="Theme.QBitRemote.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.QBitRemote</item>
+    </style>
 </resources>

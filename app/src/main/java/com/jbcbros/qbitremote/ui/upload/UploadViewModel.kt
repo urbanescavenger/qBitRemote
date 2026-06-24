@@ -6,8 +6,10 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jbcbros.qbitremote.R
 import com.jbcbros.qbitremote.data.repository.QbRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,11 +21,13 @@ data class UploadUiState(
     val selectedCategory: String = "uncategorized",
     val categories: List<String> = listOf("uncategorized"),
     val isSubmitting: Boolean = false,
-    val resultMessage: String? = null
+    val resultMessage: String? = null,
+    val addSuccess: Boolean = false
 )
 
 @HiltViewModel
 class UploadViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val repository: QbRepository
 ) : ViewModel() {
 
@@ -63,14 +67,20 @@ class UploadViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isSubmitting = true, resultMessage = null)
             val trimmed = urls.trim()
             if (trimmed.isEmpty()) {
-                _uiState.value = _uiState.value.copy(isSubmitting = false, resultMessage = "未提供链接")
+                _uiState.value = _uiState.value.copy(
+                    isSubmitting = false,
+                    resultMessage = context.getString(R.string.msg_empty_url)
+                )
                 return@launch
             }
             val category = if (_uiState.value.selectedCategory == "uncategorized") null else _uiState.value.selectedCategory
             val success = repository.addTorrentByUrl(trimmed, category)
             _uiState.value = _uiState.value.copy(
                 isSubmitting = false,
-                resultMessage = if (success) "添加成功" else "添加失败"
+                resultMessage = context.getString(
+                    if (success) R.string.msg_add_success else R.string.msg_add_failed
+                ),
+                addSuccess = success
             )
             if (success) onSuccess()
         }
@@ -83,7 +93,10 @@ class UploadViewModel @Inject constructor(
             val success = repository.addTorrentFile(uri, category)
             _uiState.value = _uiState.value.copy(
                 isSubmitting = false,
-                resultMessage = if (success) "添加成功" else "添加失败"
+                resultMessage = context.getString(
+                    if (success) R.string.msg_add_success else R.string.msg_add_failed
+                ),
+                addSuccess = success
             )
             if (success) onSuccess()
         }

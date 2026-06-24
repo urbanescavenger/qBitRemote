@@ -1,10 +1,13 @@
 package com.jbcbros.qbitremote.ui.detail
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jbcbros.qbitremote.R
 import com.jbcbros.qbitremote.data.model.Torrent
 import com.jbcbros.qbitremote.data.repository.QbRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,11 +20,14 @@ import javax.inject.Inject
 data class DetailUiState(
     val torrent: Torrent? = null,
     val isLoading: Boolean = false,
-    val actionMessage: String? = null
+    val actionMessage: String? = null,
+    val actionSuccess: Boolean = false,
+    val connectionError: String? = null
 )
 
 @HiltViewModel
 class TorrentDetailViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val repository: QbRepository
 ) : ViewModel() {
 
@@ -29,6 +35,16 @@ class TorrentDetailViewModel @Inject constructor(
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
     private var pollJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            repository.connectionError.collect { error ->
+                if (error != null) {
+                    _uiState.value = _uiState.value.copy(connectionError = error)
+                }
+            }
+        }
+    }
 
     fun loadTorrent(hash: String) {
         viewModelScope.launch {
@@ -57,7 +73,7 @@ class TorrentDetailViewModel @Inject constructor(
     fun pauseTorrent(hash: String) {
         viewModelScope.launch {
             val success = repository.stopTorrent(hash)
-            _uiState.value = _uiState.value.copy(actionMessage = if (success) "已暂停" else "操作失败")
+            onActionResult(success, R.string.msg_paused)
             if (success) loadTorrent(hash)
         }
     }
@@ -65,7 +81,7 @@ class TorrentDetailViewModel @Inject constructor(
     fun resumeTorrent(hash: String) {
         viewModelScope.launch {
             val success = repository.startTorrent(hash)
-            _uiState.value = _uiState.value.copy(actionMessage = if (success) "已恢复" else "操作失败")
+            onActionResult(success, R.string.msg_resumed)
             if (success) loadTorrent(hash)
         }
     }
@@ -73,21 +89,37 @@ class TorrentDetailViewModel @Inject constructor(
     fun recheckTorrent(hash: String) {
         viewModelScope.launch {
             val success = repository.recheckTorrent(hash)
-            _uiState.value = _uiState.value.copy(actionMessage = if (success) "开始校验" else "操作失败")
+            onActionResult(success, R.string.msg_recheck_started)
             if (success) loadTorrent(hash)
         }
     }
 
-    fun deleteTorrent(hash: String, onDeleted: () -> Unit) {
+    fun deleteTorrent(hash: String, deleteFiles: Boolean, onDeleted: () -> Unit) {
         viewModelScope.launch {
-            val success = repository.deleteTorrent(hash)
-            _uiState.value = _uiState.value.copy(actionMessage = if (success) "已删除" else "删除失败")
+            val success = repository.deleteTorrent(hash, deleteFiles)
+            _uiState.value = _uiState.value.copy(
+                actionMessage = context.getString(
+                    if (success) R.string.msg_deleted else R.string.msg_delete_failed
+                ),
+                actionSuccess = success
+            )
             if (success) onDeleted()
         }
     }
 
+    private fun onActionResult(success: Boolean, successRes: Int) {
+        _uiState.value = _uiState.value.copy(
+            actionMessage = context.getString(if (success) successRes else R.string.msg_action_failed),
+            actionSuccess = success
+        )
+    }
+
     fun clearMessage() {
         _uiState.value = _uiState.value.copy(actionMessage = null)
+    }
+
+    fun clearConnectionError() {
+        _uiState.value = _uiState.value.copy(connectionError = null)
     }
 
     override fun onCleared() {

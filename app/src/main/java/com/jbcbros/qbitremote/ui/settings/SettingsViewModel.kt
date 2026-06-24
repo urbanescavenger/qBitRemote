@@ -1,11 +1,13 @@
 package com.jbcbros.qbitremote.ui.settings
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jbcbros.qbitremote.data.model.LoginResult
+import com.jbcbros.qbitremote.R
 import com.jbcbros.qbitremote.data.model.ServerConfig
 import com.jbcbros.qbitremote.data.repository.QbRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +29,7 @@ data class SettingsUiState(
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val repository: QbRepository
 ) : ViewModel() {
 
@@ -68,16 +71,16 @@ class SettingsViewModel @Inject constructor(
             val result = repository.testLogin(config)
             if (result.ok) {
                 repository.saveConfig(config)
-                _uiState.value = _uiState.value.copy(isTesting = false, testResult = "登录成功，已保存", saved = true)
+                _uiState.value = _uiState.value.copy(isTesting = false, testResult = context.getString(R.string.msg_login_success), saved = true)
                 onSaved()
             } else {
                 val reason = when {
-                    result.error != null -> "network: ${result.error}"
-                    result.status == 401 -> "HTTP 401 — 用户名或密码错误"
-                    result.status == 403 -> "HTTP 403 — 被 qBittorrent 封禁 IP"
-                    else -> "HTTP ${result.status}: ${result.body}"
+                    result.error != null -> context.getString(R.string.error_network, result.error)
+                    result.status == 401 -> context.getString(R.string.error_http_401)
+                    result.status == 403 -> context.getString(R.string.error_http_403)
+                    else -> context.getString(R.string.error_http_code, result.status, result.body)
                 }
-                _uiState.value = _uiState.value.copy(isTesting = false, testResult = "无法通过验证。$reason", saved = false)
+                _uiState.value = _uiState.value.copy(isTesting = false, testResult = context.getString(R.string.msg_test_failed, reason), saved = false)
             }
         }
     }

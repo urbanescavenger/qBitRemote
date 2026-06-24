@@ -13,12 +13,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -52,7 +55,9 @@ fun TorrentDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var deleteFiles by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(hash) {
         viewModel.loadTorrent(hash)
@@ -67,14 +72,22 @@ fun TorrentDetailScreen(
 
     LaunchedEffect(uiState.actionMessage) {
         if (uiState.actionMessage != null) {
-            if (uiState.actionMessage != "操作失败") {
+            if (uiState.actionSuccess) {
                 vibrate(context)
             }
             viewModel.clearMessage()
         }
     }
 
+    LaunchedEffect(uiState.connectionError) {
+        if (uiState.connectionError != null) {
+            snackbarHostState.showSnackbar(uiState.connectionError)
+            viewModel.clearConnectionError()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.title_torrent_detail)) },
@@ -162,11 +175,23 @@ fun TorrentDetailScreen(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text(stringResource(R.string.dialog_delete_torrent_title)) },
-            text = { Text(name) },
+            text = {
+                Column {
+                    Text(name)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = deleteFiles,
+                            onCheckedChange = { deleteFiles = it }
+                        )
+                        Text(stringResource(R.string.label_delete_files))
+                    }
+                }
+            },
             confirmButton = {
                 Button(onClick = {
                     showDeleteDialog = false
-                    viewModel.deleteTorrent(hash, onNavigateBack)
+                    viewModel.deleteTorrent(hash, deleteFiles, onNavigateBack)
                 }) {
                     Text(stringResource(R.string.action_delete))
                 }

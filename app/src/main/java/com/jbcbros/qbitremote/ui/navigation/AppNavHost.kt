@@ -28,11 +28,11 @@ import com.jbcbros.qbitremote.ui.settings.SettingsScreen
 import com.jbcbros.qbitremote.ui.upload.UploadScreen
 import com.jbcbros.qbitremote.ui.detail.TorrentDetailScreen
 
-sealed class Screen(val route: String, val title: String) {
-    data object Home : Screen("home", "首页")
-    data object Settings : Screen("settings", "设置")
-    data object Upload : Screen("upload", "添加")
-    data object Detail : Screen("detail/{hash}/{name}", "详情")
+sealed class Screen(val route: String) {
+    data object Home : Screen("home")
+    data object Settings : Screen("settings")
+    data object Upload : Screen("upload")
+    data object Detail : Screen("detail/{hash}/{name}")
 }
 
 @Composable

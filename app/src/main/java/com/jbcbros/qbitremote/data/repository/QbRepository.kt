@@ -8,13 +8,18 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.jbcbros.qbitremote.R
 import com.jbcbros.qbitremote.data.api.QbApiService
+import com.jbcbros.qbitremote.data.api.QbAuthInterceptor
 import com.jbcbros.qbitremote.data.api.QbCookieJar
 import com.jbcbros.qbitremote.data.model.LoginResult
 import com.jbcbros.qbitremote.data.model.ServerConfig
 import com.jbcbros.qbitremote.data.model.Torrent
 import com.jbcbros.qbitremote.data.model.TransferInfo
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -37,6 +42,10 @@ class QbRepository @Inject constructor(
     private val cookieJar = QbCookieJar()
     private var currentConfig: ServerConfig = ServerConfig()
     private var apiService: QbApiService? = null
+
+    /** Last connection error encountered by polling, surfaced to the UI as a Snackbar. */
+    private val _connectionError = MutableStateFlow<String?>(null)
+    val connectionError: StateFlow<String?> = _connectionError.asStateFlow()
 
     companion object {
         private val HOST = stringPreferencesKey("host")
@@ -89,6 +98,7 @@ class QbRepository @Inject constructor(
         val client = OkHttpClient.Builder()
             .cookieJar(cookieJar)
             .addInterceptor(logging)
+            .addInterceptor(QbAuthInterceptor { currentConfig })
             .build()
 
         apiService = Retrofit.Builder()
@@ -101,7 +111,7 @@ class QbRepository @Inject constructor(
 
     suspend fun testLogin(config: ServerConfig): LoginResult {
         val baseUrl = config.baseUrl()
-        if (baseUrl.isBlank()) return LoginResult(false, error = "配置为空")
+        if (baseUrl.isBlank()) return LoginResult(false, error = context.getString(R.string.msg_no_config))
 
         val tempClient = OkHttpClient.Builder()
             .cookieJar(cookieJar)
@@ -129,7 +139,7 @@ class QbRepository @Inject constructor(
     }
 
     suspend fun login(): LoginResult {
-        val service = apiService ?: return LoginResult(false, error = "未配置服务器")
+        val service = apiService ?: return LoginResult(false, error = context.getString(R.string.msg_no_config))
         return try {
             val res = service.login(currentConfig.username, currentConfig.password)
             val body = res.body()?.string()?.trim() ?: ""
@@ -146,8 +156,10 @@ class QbRepository @Inject constructor(
             val res = service.getTorrents(filter = filter)
             val body = res.body()?.string() ?: return emptyList()
             val list = com.google.gson.Gson().fromJson(body, Array<Torrent>::class.java)
+            _connectionError.value = null
             list?.toList() ?: emptyList()
         } catch (e: Exception) {
+            _connectionError.value = context.getString(R.string.error_connection)
             emptyList()
         }
     }
@@ -211,10 +223,10 @@ class QbRepository @Inject constructor(
     suspend fun startTorrent(hash: String): Boolean = action { apiService?.startTorrent(hash) }
     suspend fun recheckTorrent(hash: String): Boolean = action { apiService?.recheckTorrent(hash) }
 
-    suspend fun deleteTorrent(hash: String): Boolean {
+    suspend fun deleteTorrent(hash: String, deleteFiles: Boolean = true): Boolean {
         val service = apiService ?: return false
         return try {
-            val res = service.deleteTorrent(hash, "true")
+            val res = service.deleteTorrent(hash, deleteFiles.toString())
             res.isSuccessful
         } catch (e: Exception) {
             false

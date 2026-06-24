@@ -1,12 +1,15 @@
 package com.jbcbros.qbitremote.ui.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jbcbros.qbitremote.R
 import com.jbcbros.qbitremote.data.model.ServerConfig
 import com.jbcbros.qbitremote.data.model.Torrent
 import com.jbcbros.qbitremote.data.model.TransferInfo
 import com.jbcbros.qbitremote.data.repository.QbRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +42,7 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val repository: QbRepository
 ) : ViewModel() {
 
@@ -55,6 +59,14 @@ class HomeViewModel @Inject constructor(
             if (config.host.isNotBlank()) {
                 repository.loadConfig()
                 startPolling()
+            }
+        }
+        // Surface connection errors (unreachable server / failed auth) as a Snackbar.
+        viewModelScope.launch {
+            repository.connectionError.collect { error ->
+                if (error != null) {
+                    _uiState.value = _uiState.value.copy(snackbarMessage = error)
+                }
             }
         }
     }
@@ -135,7 +147,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val success = repository.stopTorrent(hash)
             _uiState.value = _uiState.value.copy(
-                snackbarMessage = if (success) "已暂停" else "暂停失败"
+                snackbarMessage = context.getString(
+                    if (success) R.string.msg_paused else R.string.msg_pause_failed
+                )
             )
             if (success) refresh()
         }
@@ -145,7 +159,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val success = repository.startTorrent(hash)
             _uiState.value = _uiState.value.copy(
-                snackbarMessage = if (success) "已恢复" else "恢复失败"
+                snackbarMessage = context.getString(
+                    if (success) R.string.msg_resumed else R.string.msg_resume_failed
+                )
             )
             if (success) refresh()
         }
@@ -155,7 +171,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val success = repository.deleteTorrent(hash)
             _uiState.value = _uiState.value.copy(
-                snackbarMessage = if (success) "已删除" else "删除失败"
+                snackbarMessage = context.getString(
+                    if (success) R.string.msg_deleted else R.string.msg_delete_failed
+                )
             )
             if (success) refresh()
         }

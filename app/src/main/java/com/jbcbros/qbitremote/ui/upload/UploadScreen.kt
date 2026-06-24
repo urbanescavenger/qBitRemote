@@ -55,9 +55,8 @@ fun UploadScreen(
         uri?.let { viewModel.addByFile(it, onNavigateBack) }
     }
 
-    val successMessage = stringResource(R.string.msg_add_success)
-    LaunchedEffect(uiState.resultMessage) {
-        if (uiState.resultMessage == successMessage) {
+    LaunchedEffect(uiState.addSuccess) {
+        if (uiState.addSuccess) {
             onNavigateBack()
         }
     }
@@ -151,7 +150,7 @@ fun UploadScreen(
                 Text(if (uiState.isSubmitting) stringResource(R.string.msg_adding) else stringResource(R.string.action_add))
             }
 
-            if (uiState.resultMessage != null && uiState.resultMessage != stringResource(R.string.msg_add_success)) {
+            if (uiState.resultMessage != null && !uiState.addSuccess) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(text = uiState.resultMessage ?: "", color = Color.Red)
             }
