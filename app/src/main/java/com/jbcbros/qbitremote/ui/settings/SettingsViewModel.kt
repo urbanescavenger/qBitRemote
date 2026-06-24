@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SettingsUiState(
+    val editingId: String = "",
     val nickname: String = "",
     val host: String = "",
     val port: String = "",
@@ -38,8 +39,9 @@ class SettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val config = repository.serverConfig.firstOrNull() ?: ServerConfig()
+            val config = runCatching { repository.loadConfig() }.getOrDefault(ServerConfig())
             _uiState.value = SettingsUiState(
+                editingId = config.id,
                 nickname = config.nickname,
                 host = config.host,
                 port = config.port,
@@ -61,6 +63,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isTesting = true, testResult = null)
             val config = ServerConfig(
+                id = _uiState.value.editingId,
                 nickname = _uiState.value.nickname,
                 host = _uiState.value.host,
                 port = _uiState.value.port,

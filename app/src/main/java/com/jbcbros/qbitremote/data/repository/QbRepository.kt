@@ -42,6 +42,7 @@ class QbRepository @Inject constructor(
     private val context: Context
 ) {
     private val cookieJar = QbCookieJar()
+    private val gson = com.google.gson.Gson()
     private var currentConfig: ServerConfig = ServerConfig()
     private var apiService: QbApiService? = null
 
@@ -50,26 +51,61 @@ class QbRepository @Inject constructor(
     val connectionError: StateFlow<String?> = _connectionError.asStateFlow()
 
     companion object {
+        // Legacy single-server keys — kept for migration (not deleted afterward).
         private val HOST = stringPreferencesKey("host")
         private val PORT = stringPreferencesKey("port")
         private val USERNAME = stringPreferencesKey("username")
         private val PASSWORD = stringPreferencesKey("password")
         private val NICKNAME = stringPreferencesKey("nickname")
         private val SSL = booleanPreferencesKey("ssl")
+        // Multi-server storage.
+        private val SERVERS_JSON = stringPreferencesKey("servers_json")
+        private val ACTIVE_SERVER_ID = stringPreferencesKey("active_server_id")
     }
 
+    private fun parseServers(prefs: Preferences): List<ServerConfig> {
+        val json = prefs[SERVERS_JSON] ?: return emptyList()
+        return runCatching {
+            gson.fromJson(json, Array<ServerConfig>::class.java)?.toList() ?: emptyList()
+        }.getOrDefault(emptyList())
+    }
+
+    /** The full list of configured servers. */
+    val servers: Flow<List<ServerConfig>> = context.dataStore.data.map { prefs -> parseServers(prefs) }
+
+    /** The currently active server (or the first one, or an empty placeholder). */
     val serverConfig: Flow<ServerConfig> = context.dataStore.data.map { prefs ->
-        ServerConfig(
+        val list = parseServers(prefs)
+        val activeId = prefs[ACTIVE_SERVER_ID]
+        list.firstOrNull { it.id == activeId } ?: list.firstOrNull() ?: ServerConfig()
+    }
+
+    /**
+     * Ensures the legacy single-server keys (if present) are migrated into the servers list on first
+     * run. Non-destructive: old keys are left in place as a backup. Idempotent.
+     */
+    private suspend fun migrateIfNeeded() {
+        val prefs = context.dataStore.data.first()
+        if (!prefs[SERVERS_JSON].isNullOrBlank()) return
+        val host = prefs[HOST] ?: ""
+        if (host.isBlank()) return
+        val migrated = ServerConfig(
+            id = java.util.UUID.randomUUID().toString(),
             nickname = prefs[NICKNAME] ?: "",
-            host = prefs[HOST] ?: "",
+            host = host,
             port = prefs[PORT] ?: "",
             username = prefs[USERNAME] ?: "",
             password = prefs[PASSWORD] ?: "",
             ssl = prefs[SSL] ?: false
         )
+        context.dataStore.edit {
+            it[SERVERS_JSON] = gson.toJson(listOf(migrated))
+            it[ACTIVE_SERVER_ID] = migrated.id
+        }
     }
 
     suspend fun loadConfig(): ServerConfig {
+        migrateIfNeeded()
         val config = serverConfig.first()
         currentConfig = config
         updateApiService(config)
@@ -77,14 +113,32 @@ class QbRepository @Inject constructor(
     }
 
     suspend fun saveConfig(config: ServerConfig) {
-        context.dataStore.edit { prefs ->
-            prefs[HOST] = config.host
-            prefs[PORT] = config.port
-            prefs[USERNAME] = config.username
-            prefs[PASSWORD] = config.password
-            prefs[NICKNAME] = config.nickname
-            prefs[SSL] = config.ssl
+        val id = if (config.id.isBlank()) java.util.UUID.randomUUID().toString() else config.id
+        val withId = config.copy(id = id)
+        val current = parseServers(context.dataStore.data.first()).toMutableList()
+        val idx = current.indexOfFirst { it.id == id }
+        if (idx >= 0) current[idx] = withId else current.add(withId)
+        context.dataStore.edit {
+            it[SERVERS_JSON] = gson.toJson(current)
+            it[ACTIVE_SERVER_ID] = id
         }
+        currentConfig = withId
+        updateApiService(withId)
+    }
+
+    suspend fun deleteServer(id: String) {
+        val prefs = context.dataStore.data.first()
+        val current = parseServers(prefs).filter { it.id != id }
+        val activeId = prefs[ACTIVE_SERVER_ID]
+        context.dataStore.edit {
+            it[SERVERS_JSON] = gson.toJson(current)
+            if (activeId == id) it[ACTIVE_SERVER_ID] = current.firstOrNull()?.id ?: ""
+        }
+    }
+
+    suspend fun setActiveServer(id: String) {
+        context.dataStore.edit { it[ACTIVE_SERVER_ID] = id }
+        val config = serverConfig.first()
         currentConfig = config
         updateApiService(config)
     }

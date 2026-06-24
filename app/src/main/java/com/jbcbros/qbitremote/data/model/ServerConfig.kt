@@ -1,6 +1,7 @@
 package com.jbcbros.qbitremote.data.model
 
 data class ServerConfig(
+    val id: String = "",
     val nickname: String = "",
     val host: String = "",
     val port: String = "",
