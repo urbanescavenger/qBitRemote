@@ -283,9 +283,18 @@ class QbRepository @Inject constructor(
         val service = apiService ?: return false
         return try {
             val res = service.addTorrentByUrl(urls, category, tags)
-            val body = res.body()?.string()?.lowercase()?.trim() ?: ""
-            res.isSuccessful && !body.contains("fail")
+            // qBittorrent /torrents/add returns 415 for an invalid file, 200 for everything else
+            // (including a successful add whose body may historically be "Fails."). Treat any 2xx
+            // as success; surface the real status on genuine failure.
+            if (res.isSuccessful) {
+                true
+            } else {
+                val body = res.body()?.string()?.take(80) ?: ""
+                _connectionError.value = "add HTTP ${res.code()}: $body"
+                false
+            }
         } catch (e: Exception) {
+            _connectionError.value = "add ${e.javaClass.simpleName}: ${e.message}"
             false
         }
     }
@@ -305,11 +314,16 @@ class QbRepository @Inject constructor(
                     it.toRequestBody("text/plain".toMediaTypeOrNull())
                 }
                 val res = service.addTorrentFile(part, categoryBody, tagsBody)
-                val body = res.body()?.string()?.lowercase()?.trim() ?: ""
-                return res.isSuccessful && !body.contains("fail")
+                if (res.isSuccessful) {
+                    return true
+                } else {
+                    val body = res.body()?.string()?.take(80) ?: ""
+                    _connectionError.value = "add HTTP ${res.code()}: $body"
+                    return false
+                }
             } ?: return false
         } catch (e: Exception) {
-            e.printStackTrace()
+            _connectionError.value = "add ${e.javaClass.simpleName}: ${e.message}"
             return false
         }
     }
