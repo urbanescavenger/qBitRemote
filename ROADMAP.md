@@ -81,7 +81,7 @@
 |---|------|------|----------|
 | 3.1 | 国际化 | 抽出 `values-zh-rCN/strings.xml`（当前默认中文作为 zh-rCN），新增 `values/strings.xml`（英文） | `res/values-*/strings.xml` |
 | 3.2 | 空/错状态细化 | 无配置、网络失败、登录失败、服务器不可达、空列表分别给出不同文案与图标 | 各 Screen |
-| 3.3 | Pull-to-Refresh | 升级 Compose BOM 后，在首页加 `PullRefreshIndicator` 或 `LazyColumn` 配套刷新 | `HomeScreen.kt` |
+| ~~3.3~~ | ~~Pull-to-Refresh~~ | 已删除：首页已 3 秒自动轮询，下拉刷新边际收益低，不值得为此升级 Compose BOM（风险最高） | — |
 | 3.4 | 状态栏/Edge-to-Edge 统一 | 修正 `Theme.kt` 中 `statusBarColor = primary` 与 TopAppBar 的色差；使用 `enableEdgeToEdge` + windowInsets 规范 | `Theme.kt`, `MainActivity.kt` |
 | 3.5 | Timber 日志 | 接入 `com.jakewharton.timber:timber`，替换 `e.printStackTrace()`；debug 输出完整，release 关闭 | 全局 |
 | 3.6 | 崩溃上报 | 可选接入 Firebase Crashlytics 或开源替代（如 ACRA），先完成基础日志再说 | 后续评估 |
@@ -177,6 +177,6 @@
 - 性能：大种子（数千文件）详情页渲染、每 3 秒轮询重建 Retrofit 的开销。
 
 ### 7.2 下一步建议
-进入 **Phase 3（P2）体验与工程化**：国际化已完成（提前做了），剩空/错状态细化、Pull-to-Refresh（需先升 Compose BOM）、Edge-to-Edge 统一、Timber 日志；以及 Phase 4 的 R8/ProGuard 规则、版本号自动化、单元测试。
+进入 **Phase 4（P3）发布加固**：R8/ProGuard 规则、版本号自动化（已完成）、单元测试、CI lint+test。Phase 3 的国际化、空错状态、Edge-to-Edge、Timber 均已完成；3.3 Pull-to-Refresh 已删除（自动轮询已覆盖，不值得为它升级 Compose BOM）。
 
 
