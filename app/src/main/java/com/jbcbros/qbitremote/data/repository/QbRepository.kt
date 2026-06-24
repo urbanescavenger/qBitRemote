@@ -31,6 +31,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -215,6 +216,7 @@ class QbRepository @Inject constructor(
             _connectionError.value = null
             list?.toList() ?: emptyList()
         } catch (e: Exception) {
+            Timber.e(e, "getTorrents")
             _connectionError.value = context.getString(R.string.error_connection)
             emptyList()
         }
@@ -227,6 +229,7 @@ class QbRepository @Inject constructor(
             val body = res.body()?.string() ?: return null
             com.google.gson.Gson().fromJson(body, TransferInfo::class.java)
         } catch (e: Exception) {
+            Timber.e(e, "getTransferInfo")
             null
         }
     }
@@ -239,6 +242,7 @@ class QbRepository @Inject constructor(
             val map = com.google.gson.Gson().fromJson(body, Map::class.java) as? Map<String, Map<String, Any>>
             map?.keys?.toList() ?: emptyList()
         } catch (e: Exception) {
+            Timber.e(e, "getCategories")
             emptyList()
         }
     }
@@ -251,6 +255,7 @@ class QbRepository @Inject constructor(
             val arr = com.google.gson.Gson().fromJson(body, Array<String>::class.java)
             arr?.toList() ?: emptyList()
         } catch (e: Exception) {
+            Timber.e(e, "getTags")
             emptyList()
         }
     }
@@ -263,6 +268,7 @@ class QbRepository @Inject constructor(
             val arr = com.google.gson.Gson().fromJson(body, Array<TorrentFile>::class.java)
             arr?.toList() ?: emptyList()
         } catch (e: Exception) {
+            Timber.e(e, "getTorrentFiles")
             emptyList()
         }
     }
@@ -275,6 +281,7 @@ class QbRepository @Inject constructor(
             val arr = com.google.gson.Gson().fromJson(body, Array<Tracker>::class.java)
             arr?.toList() ?: emptyList()
         } catch (e: Exception) {
+            Timber.e(e, "getTorrentTrackers")
             emptyList()
         }
     }
@@ -294,6 +301,7 @@ class QbRepository @Inject constructor(
                 false
             }
         } catch (e: Exception) {
+            Timber.e(e, "addTorrentByUrl")
             _connectionError.value = "add ${e.javaClass.simpleName}: ${e.message}"
             false
         }
@@ -323,6 +331,7 @@ class QbRepository @Inject constructor(
                 }
             } ?: return false
         } catch (e: Exception) {
+            Timber.e(e, "addTorrentFile")
             _connectionError.value = "add ${e.javaClass.simpleName}: ${e.message}"
             return false
         }
@@ -342,6 +351,7 @@ class QbRepository @Inject constructor(
             val res = service.deleteTorrent(hash, deleteFiles.toString())
             res.isSuccessful
         } catch (e: Exception) {
+            Timber.e(e, "deleteTorrent")
             false
         }
     }
@@ -351,6 +361,7 @@ class QbRepository @Inject constructor(
             val res = block()
             res?.isSuccessful == true
         } catch (e: Exception) {
+            Timber.e(e, "torrentAction")
             false
         }
     }
