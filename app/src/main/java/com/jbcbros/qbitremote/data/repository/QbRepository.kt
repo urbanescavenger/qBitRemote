@@ -150,10 +150,10 @@ class QbRepository @Inject constructor(
         }
     }
 
-    suspend fun getTorrents(filter: String? = null): List<Torrent> {
+    suspend fun getTorrents(filter: String? = null, sort: String = "added_on", reverse: Boolean = true): List<Torrent> {
         val service = apiService ?: return emptyList()
         return try {
-            val res = service.getTorrents(filter = filter)
+            val res = service.getTorrents(sort = sort, reverse = reverse, filter = filter)
             val body = res.body()?.string() ?: return emptyList()
             val list = com.google.gson.Gson().fromJson(body, Array<Torrent>::class.java)
             _connectionError.value = null
@@ -222,6 +222,10 @@ class QbRepository @Inject constructor(
     suspend fun stopTorrent(hash: String): Boolean = action { apiService?.stopTorrent(hash) }
     suspend fun startTorrent(hash: String): Boolean = action { apiService?.startTorrent(hash) }
     suspend fun recheckTorrent(hash: String): Boolean = action { apiService?.recheckTorrent(hash) }
+
+    /** qBittorrent accepts hashes="all" to act on every torrent. */
+    suspend fun stopAllTorrents(): Boolean = action { apiService?.stopTorrent("all") }
+    suspend fun startAllTorrents(): Boolean = action { apiService?.startTorrent("all") }
 
     suspend fun deleteTorrent(hash: String, deleteFiles: Boolean = true): Boolean {
         val service = apiService ?: return false

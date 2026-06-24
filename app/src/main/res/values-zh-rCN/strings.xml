@@ -39,6 +39,19 @@
     <string name="action_pause">暂停</string>
     <string name="action_resume">恢复</string>
     <string name="action_delete">删除</string>
+    <string name="action_pause_all">全部暂停</string>
+    <string name="action_resume_all">全部恢复</string>
+    <string name="action_sort">排序</string>
+    <string name="sort_name">名称</string>
+    <string name="sort_progress">进度</string>
+    <string name="sort_dlspeed">下载速度</string>
+    <string name="sort_upspeed">上传速度</string>
+    <string name="sort_ratio">比率</string>
+    <string name="sort_added">添加时间</string>
+    <string name="sort_ascending">升序</string>
+    <string name="sort_descending">降序</string>
+    <string name="msg_paused_all">已全部暂停</string>
+    <string name="msg_resumed_all">已全部恢复</string>
 
     <!-- Detail Screen -->
     <string name="title_torrent_detail">种子详情</string>

@@ -26,6 +26,15 @@ sealed class FilterType(val value: String?) {
     data object Completed : FilterType("completed")
 }
 
+sealed class SortType(val value: String, val resId: Int) {
+    data object Added : SortType("added_on", R.string.sort_added)
+    data object Name : SortType("name", R.string.sort_name)
+    data object Progress : SortType("progress", R.string.sort_progress)
+    data object DlSpeed : SortType("dlspeed", R.string.sort_dlspeed)
+    data object UpSpeed : SortType("upspeed", R.string.sort_upspeed)
+    data object Ratio : SortType("ratio", R.string.sort_ratio)
+}
+
 data class HomeUiState(
     val torrents: List<Torrent> = emptyList(),
     val transferInfo: TransferInfo = TransferInfo(),
@@ -37,7 +46,9 @@ data class HomeUiState(
     val searchQuery: String = "",
     val snackbarMessage: String? = null,
     val categories: List<String> = emptyList(),
-    val selectedCategory: String = ""
+    val selectedCategory: String = "",
+    val sort: SortType = SortType.Added,
+    val sortReverse: Boolean = true
 )
 
 @HiltViewModel
@@ -94,7 +105,11 @@ class HomeViewModel @Inject constructor(
 
             repository.loadConfig()
             val transferInfo = repository.getTransferInfo() ?: TransferInfo()
-            allTorrents = repository.getTorrents(filter = _uiState.value.filter.value)
+            allTorrents = repository.getTorrents(
+                filter = _uiState.value.filter.value,
+                sort = _uiState.value.sort.value,
+                reverse = _uiState.value.sortReverse
+            )
             val filtered = applySearch(allTorrents, _uiState.value.searchQuery)
             _uiState.value = _uiState.value.copy(
                 torrents = filtered,
@@ -115,6 +130,16 @@ class HomeViewModel @Inject constructor(
 
     fun setFilter(filter: FilterType) {
         _uiState.value = _uiState.value.copy(filter = filter)
+        refresh()
+    }
+
+    fun setSort(sort: SortType) {
+        _uiState.value = _uiState.value.copy(sort = sort)
+        refresh()
+    }
+
+    fun toggleSortReverse() {
+        _uiState.value = _uiState.value.copy(sortReverse = !_uiState.value.sortReverse)
         refresh()
     }
 
@@ -173,6 +198,30 @@ class HomeViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(
                 snackbarMessage = context.getString(
                     if (success) R.string.msg_deleted else R.string.msg_delete_failed
+                )
+            )
+            if (success) refresh()
+        }
+    }
+
+    fun pauseAll() {
+        viewModelScope.launch {
+            val success = repository.stopAllTorrents()
+            _uiState.value = _uiState.value.copy(
+                snackbarMessage = context.getString(
+                    if (success) R.string.msg_paused_all else R.string.msg_action_failed
+                )
+            )
+            if (success) refresh()
+        }
+    }
+
+    fun resumeAll() {
+        viewModelScope.launch {
+            val success = repository.startAllTorrents()
+            _uiState.value = _uiState.value.copy(
+                snackbarMessage = context.getString(
+                    if (success) R.string.msg_resumed_all else R.string.msg_action_failed
                 )
             )
             if (success) refresh()

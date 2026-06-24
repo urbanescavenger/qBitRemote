@@ -19,16 +19,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -73,6 +77,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showBottomSheet by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
     var selectedTorrent by remember { mutableStateOf<Torrent?>(null) }
     val sheetState = rememberModalBottomSheetState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -105,6 +110,51 @@ fun HomeScreen(
                 actions = {
                     IconButton(onClick = onNavigateToUpload) {
                         Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_add), tint = Color.White)
+                    }
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.action_sort), tint = Color.White)
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_pause_all)) },
+                            onClick = { showMenu = false; viewModel.pauseAll() }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.action_resume_all)) },
+                            onClick = { showMenu = false; viewModel.resumeAll() }
+                        )
+                        HorizontalDivider()
+                        Text(
+                            text = stringResource(R.string.action_sort),
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        listOf(
+                            SortType.Added, SortType.Name, SortType.Progress,
+                            SortType.DlSpeed, SortType.UpSpeed, SortType.Ratio
+                        ).forEach { sort ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(sort.resId)) },
+                                leadingIcon = {
+                                    if (uiState.sort == sort) Icon(Icons.Default.Done, contentDescription = null)
+                                },
+                                onClick = { showMenu = false; viewModel.setSort(sort) }
+                            )
+                        }
+                        HorizontalDivider()
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    stringResource(
+                                        if (uiState.sortReverse) R.string.sort_descending else R.string.sort_ascending
+                                    )
+                                )
+                            },
+                            onClick = { showMenu = false; viewModel.toggleSortReverse() }
+                        )
                     }
                 }
             )

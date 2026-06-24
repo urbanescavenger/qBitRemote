@@ -1,0 +1,123 @@
+# qBitRemote 开发计划
+
+> 计划日期：2026/06/24  
+> 当前版本：v1.4.4（已修复 HomeScreen release 编译错误）  
+> 技术栈：Kotlin + Jetpack Compose + Material3 + Hilt + Retrofit/OkHttp + DataStore  
+> 构建：Gradle 8.4 + JDK 17 + compileSdk 34
+
+---
+
+## 1. 项目现状
+
+已完成核心功能：
+- 服务器配置持久化（DataStore）与登录测试
+- 首页种子列表实时轮询（3 秒），显示总上传/下载速度
+- 搜索、状态筛选（全部/下载中/已完成）、分类筛选
+- 长按底部弹窗：暂停 / 恢复 / 删除
+- 添加种子：磁力链/URL、剪贴板、`.torrent` 文件、选择分类
+- 种子详情页：基本信息、速度、下载/上传量、比率、做种时间、路径，以及暂停/恢复/校验/删除
+- 动态主题（Android 12+）+ 中文界面
+- GitHub Actions：push/tag 自动构建 debug/release APK，tag 自动创建 Release
+
+---
+
+## 2. 目标与原则
+
+### 总体目标
+把当前“可运行”的版本推进到“可稳定发布”的状态：补齐缺失的发布物料、统一错误处理、补充测试，再逐步扩展高频功能。
+
+### 设计原则
+1. **先修后扩**：P0 全部完成前不开新大功能。
+2. **向后兼容**：服务器配置格式不变；新增字段尽量可空/有默认值。
+3. **避免过度工程**：能用 DataStore 不用 Room；能用简单轮询不用 WebSocket。
+4. **CI 先行**：每个 PR 必须过 lint + assembleDebug，release tag 必须能签名打包。
+5. **Compose 风格统一**：继续使用 Material3，实验性 API 用 `@file:OptIn` 压制，后续随 BOM 升级逐步移除。
+
+---
+
+## 3. 阶段划分
+
+### Phase 1：发布门槛（P0）
+**目标：达到可在真机/模拟器稳定运行并打包发布。**
+
+| # | 任务 | 说明 | 改动范围 |
+|---|------|------|----------|
+| 1.1 | 正式应用图标 + Adaptive Icon | 替换 `mipmap-anydpi-v26` 占位资源，生成 `ic_launcher` / `ic_launcher_round`；Android 12+ 自适应图标 | `app/src/main/res/mipmap-*` |
+| 1.2 | SplashScreen API | 使用 `androidx.core:core-splashscreen` 避免启动白屏 | `MainActivity.kt`, `themes.xml`, build.gradle |
+| 1.3 | 统一网络错误处理与自动重登录 | Repository 内捕获 401/403/连接错误，自动尝试一次 `login()`，失败通过 StateFlow 暴露错误信息；首页/详情页/上传页统一 Snackbar | `QbRepository.kt`, 各 ViewModel/Screen |
+| 1.4 | 删除确认 + 可选删文件 | 首页长按删除前弹 AlertDialog；详情页保留确认并新增“同时删除本地文件”复选框；API `deleteFiles` 动态传参 | `HomeScreen.kt`, `TorrentDetailScreen.kt`, `QbRepository.kt` |
+| 1.5 | 真机/模拟器冒烟测试 | 至少覆盖：配置服务器、添加磁链、添加文件、暂停/恢复、删除、筛选/搜索、分类、详情刷新 | 手动测试清单 |
+| 1.6 | 补 `gradlew` wrapper | 当前项目根目录缺少 wrapper，CI 每次都要 `gradle wrapper`；应在本地生成并提交 `gradlew` + `gradle/wrapper` | 项目根目录 |
+
+**Phase 1 验收标准：**
+- `./gradlew :app:assembleRelease`（无签名或本地 debug key）能成功。
+- `./gradlew :app:lintDebug` 无致命错误。
+- 真机上主要路径跑通，崩溃率为 0。
+
+---
+
+### Phase 2：高频功能补齐（P1）
+**目标：让老用户从 React Native 旧版迁移过来没有明显功能倒退。**
+
+| # | 任务 | 说明 | 改动范围 |
+|---|------|------|----------|
+| 2.1 | 全部暂停 / 全部恢复 | 首页 TopAppBar 菜单增加“全部暂停/恢复”，调用 `/api/v2/torrents/stop` 和 `/start` 并传入所有 hash | `HomeScreen.kt`, `HomeViewModel.kt`, `QbRepository.kt` |
+| 2.2 | 排序功能 | UI 提供按名称、进度、速度、比率、添加时间排序；正/倒序切换；传给 API `sort` + `reverse` | `HomeScreen.kt`, `HomeViewModel.kt` |
+| 2.3 | 多服务器管理 | DataStore 保存服务器列表；Settings 页展示列表，支持新增/编辑/切换/删除；启动时恢复上次选中服务器 | `ServerConfig.kt`, `QbRepository.kt`, `SettingsScreen.kt`, `SettingsViewModel.kt` |
+| 2.4 | 标签（Tags）支持 | 上传页/详情页显示并选择 qBittorrent tags；同步现有 tag 列表 | `UploadScreen.kt`, `TorrentDetailScreen.kt`, `QbApiService.kt` |
+| 2.5 | 下载完成/错误系统通知 | 后台 Service 监听轮询状态，检测到“出错”或“从非完成态变为完成态”时发通知；需申请 `POST_NOTIFICATIONS` | `AndroidManifest.xml`, 新增 NotificationWorker/Service |
+| 2.6 | 详情页扩展信息 | 显示 trackers、peers、文件列表（只读）、当前限速 | `TorrentDetailScreen.kt`, `QbApiService.kt`, 新增 Model |
+
+**Phase 2 验收标准：**
+- 旧版 README 中列出的功能在新版中全部覆盖。
+- 用户可在 Settings 页切换 2+ 服务器。
+
+---
+
+### Phase 3：体验与工程化（P2）
+**目标：提升可维护性和国际化。**
+
+| # | 任务 | 说明 | 改动范围 |
+|---|------|------|----------|
+| 3.1 | 国际化 | 抽出 `values-zh-rCN/strings.xml`（当前默认中文作为 zh-rCN），新增 `values/strings.xml`（英文） | `res/values-*/strings.xml` |
+| 3.2 | 空/错状态细化 | 无配置、网络失败、登录失败、服务器不可达、空列表分别给出不同文案与图标 | 各 Screen |
+| 3.3 | Pull-to-Refresh | 升级 Compose BOM 后，在首页加 `PullRefreshIndicator` 或 `LazyColumn` 配套刷新 | `HomeScreen.kt` |
+| 3.4 | 状态栏/Edge-to-Edge 统一 | 修正 `Theme.kt` 中 `statusBarColor = primary` 与 TopAppBar 的色差；使用 `enableEdgeToEdge` + windowInsets 规范 | `Theme.kt`, `MainActivity.kt` |
+| 3.5 | Timber 日志 | 接入 `com.jakewharton.timber:timber`，替换 `e.printStackTrace()`；debug 输出完整，release 关闭 | 全局 |
+| 3.6 | 崩溃上报 | 可选接入 Firebase Crashlytics 或开源替代（如 ACRA），先完成基础日志再说 | 后续评估 |
+
+---
+
+### Phase 4：发布加固（P3）
+**目标：让 release 包更小、更安全、自动化程度更高。**
+
+| # | 任务 | 说明 | 改动范围 |
+|---|------|------|----------|
+| 4.1 | ProGuard / R8 规则 | 补齐 `proguard-rules.pro`（Retrofit/Gson/DataStore/Hilt/Compose），开启 `isMinifyEnabled = true` | `app/build.gradle.kts`, `proguard-rules.pro` |
+| 4.2 | 版本号自动化 | 使用 `git describe` / tag name 自动生成 `versionName`，commit count 生成 `versionCode` | `app/build.gradle.kts` |
+| 4.3 | CI Lint + 测试 | GitHub Actions 增加 `./gradlew :app:lintDebug :app:testDebugUnitTest` | `.github/workflows/android.yml` |
+| 4.4 | 单元测试 | 为 `QbRepository` 的 JSON 解析、格式化工具体、ViewModel 状态机写测试 | `app/src/test/java/...` |
+| 4.5 | 集成/UI 测试 | 至少覆盖首页空状态、Settings 页保存配置的端到端测试（Espresso/Compose Test） | `app/src/androidTest/java/...` |
+| 4.6 | 应用签名与发布流程文档 | 在 README 中说明如何生成 keystore、配置 GitHub Secrets、打 tag | `README.md` |
+
+---
+
+## 4. 风险与依赖
+
+| 风险 | 影响 | 应对 |
+|------|------|------|
+| Compose BOM 版本较老（2024.02.00） | 部分新 API（如 Pull-to-Refresh）不可用 | Phase 3 再升级，Phase 1/2 避免使用新 API |
+| qBittorrent API 版本差异 | 不同版本返回字段可能缺失 | Model 字段全部给默认值，解析失败 gracefully |
+| 缺少真机测试环境 | release 前无法验证低端机表现 | 至少使用 Android Emulator 多版本测试 |
+| DataStore 多服务器改造复杂 | 可能破坏现有单服务器配置 | 迁移时保留旧 key，新 key 用 `servers` 前缀 |
+
+---
+
+## 5. 推荐下一步
+
+建议立即进入 **Phase 1.1 + 1.3 + 1.6**：
+1. 补 Gradle wrapper，让本地能直接 `./gradlew assembleDebug`。
+2. 替换正式 launcher icon。
+3. 统一网络错误处理与自动重登录。
+
+这三项做完后，release 编译和真机稳定性会有质的提升，之后再进入 Phase 2 功能扩展。
