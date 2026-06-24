@@ -133,4 +133,8 @@
     <string name="error_http_403">HTTP 403 — banned by qBittorrent</string>
     <string name="error_http_code">HTTP %1$d: %2$s</string>
     <string name="error_connection">Could not reach the server. Check your network and config.</string>
+    <string name="notification_channel_name">Torrent events</string>
+    <string name="notification_channel_desc">Download-complete and error alerts</string>
+    <string name="notification_download_complete">Download complete</string>
+    <string name="notification_torrent_error">Torrent error</string>
 </resources>

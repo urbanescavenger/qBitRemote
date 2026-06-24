@@ -133,4 +133,8 @@
     <string name="error_http_403">HTTP 403 — 被 qBittorrent 封禁 IP</string>
     <string name="error_http_code">HTTP %1$d：%2$s</string>
     <string name="error_connection">连接服务器失败，请检查网络和配置</string>
+    <string name="notification_channel_name">种子事件</string>
+    <string name="notification_channel_desc">下载完成与错误提醒</string>
+    <string name="notification_download_complete">下载完成</string>
+    <string name="notification_torrent_error">种子出错</string>
 </resources>
